@@ -2,7 +2,7 @@ import React, { createContext, useReducer, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from './AuthContext';
 
-const API_URL = 'https://finsafe-tracker-api.onrender.com'; 
+const API_URL = 'https://finsafe-tracker-api.onrender.com/api/'; 
 
 const initialState = {
   transactions: [],
