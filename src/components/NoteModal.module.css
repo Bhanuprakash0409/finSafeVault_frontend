@@ -1,0 +1,189 @@
+.modalBackground {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.modalContent {
+  padding: 30px;
+  width: 90%;
+  max-width: 650px;
+  min-height: 500px;
+  background-color: #fcfdff;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  position: relative; /* Needed for the close button */
+  display: flex;
+  flex-direction: column;
+}
+
+.closeButton {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  font-size: 28px;
+  line-height: 1;
+  color: #aaa;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.closeButton:hover {
+  color: #333;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.header h3 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.noteList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.noteItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s;
+}
+
+.noteItem:hover {
+  background-color: #f5faff;
+}
+
+.noteTitle {
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 16px;
+  color: #333;
+  flex-grow: 1;
+}
+
+.editorContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.input,
+.textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: #2196F3;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+}
+
+.input {
+  margin-bottom: 15px;
+}
+
+.textarea {
+  min-height: 250px;
+  resize: vertical;
+  flex-grow: 1;
+}
+
+.editorFooter {
+  display: flex;
+  justify-content: flex-end; /* Align buttons to the right */
+  gap: 10px; /* Add space between buttons */
+  margin-top: 20px;
+}
+
+.button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.primaryButton {
+  background-color: #2196F3;
+  color: white;
+}
+.primaryButton:hover:not(:disabled) {
+  background-color: #1976D2;
+  transform: translateY(-1px);
+}
+
+.secondaryButton {
+  background-color: #e0e0e0;
+  color: #333;
+}
+.secondaryButton:hover:not(:disabled) {
+  background-color: #ccc;
+}
+
+.cancelButton {
+  background-color: #f44336;
+  color: white;
+}
+.cancelButton:hover:not(:disabled) {
+  background-color: #d32f2f;
+}
+
+.dangerButton {
+  background-color: #f44336;
+  color: white;
+  padding: 5px 10px;
+}
+.dangerButton:hover:not(:disabled) {
+  background-color: #d32f2f;
+}
+
+.newNoteButton {
+  background-color: #4CAF50;
+  color: white;
+}
+.newNoteButton:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+.error {
+  color: #d32f2f;
+  background-color: #ffebee;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  text-align: center;
+}

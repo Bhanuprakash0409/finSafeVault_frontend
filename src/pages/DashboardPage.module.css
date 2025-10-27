@@ -1,0 +1,185 @@
+.dashboardContainer {
+    padding: 20px;
+    padding-top: 0;
+    max-width: 1200px;
+    margin: 0 auto;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.header {
+    font-size: 28px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.minBalance {
+    font-size: 16px;
+    font-weight: 500;
+    color: #666;
+    background-color: #f0f0f0;
+    padding: 5px 10px;
+    border-radius: 8px;
+}
+
+.actionBar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 20px;
+    background-color: #fdfdfd;
+    border-radius: 0 0 12px 12px;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.actionButton {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease-in-out;
+}
+.actionButton:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.actionButton:disabled {
+    cursor: not-allowed;
+}
+.csvButton {
+    background-color: #2196F3; /* Blue */
+}
+.csvButton:hover {
+    background-color: #1976D2;
+}
+
+.pdfButton {
+    background-color: #F44336; /* Red */
+}
+.pdfButton:hover {
+    background-color: #D32F2F;
+}
+
+.addButton {
+    background-color: #4CAF50; /* Green */
+}
+.addButton:hover {
+    background-color: #45a049;
+}
+
+.noteButton {
+    background-color: #ff9800; /* Orange */
+}
+.noteButton:hover {
+    background-color: #f57c00;
+}
+
+.dateInput {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Updated to a grid layout for better spacing and responsiveness */
+.summaryContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px; /* Adds space between cards */
+    margin-bottom: 30px;
+}
+
+.filterBar {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.tableContainer {
+    overflow-x: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.transactionTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.transactionTable th, .transactionTable td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.transactionTable tbody tr:hover {
+    background-color: #f5faff;
+    cursor: pointer;
+}
+
+.transactionTable th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+}
+
+.paginationContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.pageInfo {
+    font-weight: bold;
+}
+
+.chartsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.chartContainer {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.controlsContainer {
+    display: flex;
+    justify-content: flex-end; /* Align to the right as date filter is moved */
+    align-items: center;
+    gap: 30px;
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+.controlGroup {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: bold;
+}
