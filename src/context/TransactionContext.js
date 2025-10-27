@@ -1,8 +1,7 @@
 import React, { createContext, useReducer, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from './AuthContext';
-
-const API_URL = 'https://finsafe-tracker-api.onrender.com/api/'; 
+const API_URL = 'https://finsafe-tracker-api.onrender.com/api/transactions/'; 
 
 const initialState = {
   transactions: [],
@@ -60,7 +59,7 @@ export const TransactionProvider = ({ children }) => {
     const config = { headers: { Authorization: `Bearer ${user.token}` } }; 
     dispatch({ type: 'FETCH_START' }); 
     try {
-      const res = await axios.get(API_URL + `?page=${page}`, config);
+      const res = await axios.get(API_URL + `?page=${page}`, config); // API_URL now includes /transactions/
       dispatch({ type: 'FETCH_SUCCESS', payload: { ...res.data, page } }); // Pass page through payload
     } catch (error) {
       // More detailed error logging
@@ -108,7 +107,7 @@ export const TransactionProvider = ({ children }) => {
         // Define config here to ensure the latest token is used
         const config = { headers: { Authorization: `Bearer ${user.token}` } };
         // ⬅️ Pass year to the API
-        const res = await axios.get(API_URL + `analytics?year=${year}`, config); 
+        const res = await axios.get(API_URL + `analytics?year=${year}`, config); // API_URL now includes /transactions/
         dispatch({ type: 'FETCH_ANALYTICS_SUCCESS', payload: res.data });
     } catch (error) {
         const message = error.response?.data?.message || error.message || 'Failed to fetch analytics';
@@ -126,7 +125,7 @@ export const TransactionProvider = ({ children }) => {
       try {
           const config = { headers: { Authorization: `Bearer ${user.token}` } }; 
           // Send date to the backend filtering endpoint
-          const res = await axios.get(API_URL + `?date=${date}`, config);
+          const res = await axios.get(API_URL + `?date=${date}`, config); // API_URL now includes /transactions/
           // Display filtered results and reset pagination state
           dispatch({ type: 'FETCH_SUCCESS', payload: { ...res.data, page: 1, pages: 1 } }); 
       } catch (error) {
@@ -143,8 +142,8 @@ export const TransactionProvider = ({ children }) => {
 
           // Fetch both transactions and analytics in parallel for the given month
           const [transactionsRes, analyticsRes] = await Promise.all([
-              axios.get(API_URL + `?date=${year}-${String(month).padStart(2, '0')}-01`, config), // This seems to be for a different purpose, keeping as is.
-              axios.get(API_URL + `analytics?year=${year}&month=${month}`, config)
+              axios.get(API_URL + `?date=${year}-${String(month).padStart(2, '0')}-01`, config), // API_URL now includes /transactions/
+              axios.get(API_URL + `analytics?year=${year}&month=${month}`, config) // API_URL now includes /transactions/
           ]);
 
           // Dispatch actions to update state with the new data
