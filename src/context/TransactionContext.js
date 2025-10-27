@@ -62,7 +62,11 @@ export const TransactionProvider = ({ children }) => {
     dispatch({ type: 'FETCH_START' }); 
     try {
       const res = await axios.get(API_URL + `?page=${page}`, config); // Now correctly forms /api/transactions?page=...
-      dispatch({ type: 'FETCH_SUCCESS', payload: { ...res.data, page } }); // Pass page through payload
+      // ✅ FIX: Ensure the payload structure is consistent and what the reducer expects.
+      // This prevents crashes if the API response format changes slightly.
+      const payload = { ...res.data, page };
+      if (!payload.transactions) payload.transactions = []; // Ensure transactions is always an array.
+      dispatch({ type: 'FETCH_SUCCESS', payload });
     } catch (error) {
       // More detailed error logging
       const message = error.response?.data?.message || error.message || 'Failed to fetch transactions';
