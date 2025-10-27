@@ -10,12 +10,12 @@ const LoginPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const result = await login(email, password);
-        if (result && result.success) {
+        // ✅ FIX: Pass credentials as a single object.
+        const success = await login({ email, password });
+        // ✅ FIX: Navigate on successful login.
+        if (success) {
             navigate('/dashboard');
         }
-        // If login fails, the 'error' state in AuthContext is automatically set,
-        // and the component will re-render to display it.
     };
 
     const containerStyle = {

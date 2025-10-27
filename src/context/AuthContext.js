@@ -2,6 +2,7 @@ import React, { createContext, useReducer } from 'react';
 import axios from 'axios';
 
 const AUTH_API_URL = 'https://finsafe-tracker-api.onrender.com/api/'; // ✅ CORRECTED
+const USER_API_URL = 'https://finsafe-tracker-api.onrender.com/api/users'; // ✅ NEW: Define USER_API_URL for profile updates
 
 const initialState = {
   user: JSON.parse(localStorage.getItem('user')) || null,
@@ -23,9 +24,7 @@ const authReducer = (state, action) => {
     case 'LOGOUT':
       return { ...state, user: null, isLoading: false, error: null };
     // ⬅️ NEW CASE: To handle settings updates
-    case 'USER_UPDATE':
-        // Merge existing user data with new payload data
-        return { ...state, user: { ...state.user, ...action.payload }, isLoading: false };
+    // The 'USER_UPDATE' case is removed as 'UPDATE_SUCCESS' will handle the state update after API call.
     default:
       return state;
   }
@@ -53,8 +52,10 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.post(AUTH_API_URL + 'auth/login', userData);
       localStorage.setItem('user', JSON.stringify(response.data));
       dispatch({ type: 'AUTH_SUCCESS', payload: response.data });
+      return true; // ✅ FIX: Return true on success
     } catch (error) {
       dispatch({ type: 'AUTH_FAIL', payload: error.response?.data?.message || error.message });
+      return false; // ✅ FIX: Return false on failure
     }
   };
 
@@ -63,20 +64,40 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: 'LOGOUT' });
   };
 
-  // ⬅️ NEW FUNCTION: Updates local state and localStorage
-  const updateUser = (data) => {
-      // 1. Update localStorage
-      const updatedUser = { ...state.user, ...data };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      
-      // 2. Update global state
-      dispatch({ type: 'USER_UPDATE', payload: data });
+  const updateUser = async (userData) => {
+    dispatch({ type: 'AUTH_START' });
+    try {
+      // Get the most recent user data directly from localStorage to ensure the token is fresh.
+      const currentUser = JSON.parse(localStorage.getItem('user'));
+      if (!currentUser || !currentUser.token) {
+        throw new Error('Not authorized. No token found.');
+      }
+
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${currentUser.token}`,
+        },
+      };
+
+      // ✅ FIX: Use USER_API_URL and make an actual API call
+      const res = await axios.put(USER_API_URL + '/profile', userData, config);
+
+      dispatch({ type: 'UPDATE_SUCCESS', payload: res.data });
+      return true; // Indicate success
+    } catch (error) {
+      const message = error.response?.data?.message || error.message || 'Update failed';
+      dispatch({ type: 'AUTH_FAIL', payload: message });
+      console.error('Update user error:', message);
+      return false; // Indicate failure
+    }
   };
 
   return (
-    // ⬅️ EXPORT NEW FUNCTION
-    <AuthContext.Provider value={{ ...state, register, login, logout, updateUser }}>
-        {children}
+    <AuthContext.Provider
+      value={{ ...state, register, login, logout, updateUser }}
+    >
+      {children}
     </AuthContext.Provider>
   );
 };
