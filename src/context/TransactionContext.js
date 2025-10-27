@@ -152,7 +152,11 @@ export const TransactionProvider = ({ children }) => {
           ]);
 
           // Dispatch actions to update state with the new data
-          dispatch({ type: 'FETCH_SUCCESS', payload: { ...transactionsRes.data, page: 1 } });
+          // ✅ FIX: Ensure the payload structure matches what the reducer expects.
+          // The transaction data should be nested under a 'transactions' key.
+          dispatch({ 
+            type: 'FETCH_SUCCESS', 
+            payload: { transactions: transactionsRes.data.transactions, balance: transactionsRes.data.balance, page: 1, pages: transactionsRes.data.pages } });
           dispatch({ type: 'FETCH_ANALYTICS_SUCCESS', payload: analyticsRes.data });
       } catch (error) {
           dispatch({ type: 'FETCH_FAIL', payload: error.response?.data?.message || 'Failed to fetch monthly report data' });
