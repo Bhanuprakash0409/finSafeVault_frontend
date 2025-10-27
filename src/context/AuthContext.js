@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     dispatch({ type: 'AUTH_START' });
     try {
-      const response = await axios.post(AUTH_API_URL + 'register', userData);
+      const response = await axios.post(AUTH_API_URL + 'auth/register', userData);
       localStorage.setItem('user', JSON.stringify(response.data));
       dispatch({ type: 'AUTH_SUCCESS', payload: response.data });
     } catch (error) {
@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (userData) => {
     dispatch({ type: 'AUTH_START' });
     try {
-      const response = await axios.post(AUTH_API_URL + 'login', userData);
+      const response = await axios.post(AUTH_API_URL + 'auth/login', userData);
       localStorage.setItem('user', JSON.stringify(response.data));
       dispatch({ type: 'AUTH_SUCCESS', payload: response.data });
     } catch (error) {

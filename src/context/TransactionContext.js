@@ -54,10 +54,10 @@ export const TransactionProvider = ({ children }) => {
   const { user } = useContext(AuthContext);
 
   // 1. Fetch Transactions
-  const getTransactions = async (user, page = 1) => { // ⬅️ ACCEPTS PAGE PARAMETER
+  const getTransactions = async (page = 1) => { // ⬅️ ACCEPTS PAGE PARAMETER
     if (!user) return;
-    // ✅ FIX: Use the user object passed as an argument to ensure the token is fresh.
-    const config = { headers: { Authorization: `Bearer ${user.token}` } };
+    // ✅ FIX: Use the user object from context to ensure the token is fresh.
+    const config = { headers: { Authorization: `Bearer ${user.token}` } }; 
     dispatch({ type: 'FETCH_START' }); 
     try {
       const res = await axios.get(API_URL + `?page=${page}`, config);
@@ -71,7 +71,7 @@ export const TransactionProvider = ({ children }) => {
   };
 
   // 2. Add Transaction
-  const addTransaction = async (transactionData, user) => {
+  const addTransaction = async (transactionData) => {
     dispatch({ type: 'ADD_START' });
     
     // ⬅️ NEW: Debugging log
@@ -120,11 +120,11 @@ export const TransactionProvider = ({ children }) => {
   };
   
   // ⬅️ NEW FUNCTION: Filter Transactions by Date
-  const getTransactionsByDate = async (date, user) => {
+  const getTransactionsByDate = async (date) => {
       if (!user) return;
       dispatch({ type: 'FETCH_START' });
       try {
-          const config = { headers: { Authorization: `Bearer ${user.token}` } };
+          const config = { headers: { Authorization: `Bearer ${user.token}` } }; 
           // Send date to the backend filtering endpoint
           const res = await axios.get(API_URL + `?date=${date}`, config);
           // Display filtered results and reset pagination state
@@ -135,7 +135,7 @@ export const TransactionProvider = ({ children }) => {
   };
   
   // ➡️ NEW FUNCTION: Fetches all data needed for a monthly report
-  const getMonthlyReportData = async (year, month, user) => {
+  const getMonthlyReportData = async (year, month) => {
       if (!user) return;
       dispatch({ type: 'FETCH_START' });
       try {
