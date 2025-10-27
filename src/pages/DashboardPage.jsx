@@ -43,8 +43,8 @@ const DashboardPage = () => {
     // --- Data Fetching Effect (Triggers on Login and Year Change) ---
     useEffect(() => {
         if (user) {
-            // Fetch initial 10 transactions (page 1)
-            getTransactions(user, 1); 
+            // ✅ FIX: Fetch initial transactions without passing the user argument.
+            getTransactions(1); 
 
             // Fetch analytics for the currently selected year
             getAnalyticsData(analysisYear); 
@@ -58,7 +58,7 @@ const DashboardPage = () => {
     // Handler for Pagination
     const handlePageChange = (newPage) => {
         if (newPage >= 1 && newPage <= totalPages) {
-            getTransactions(user, newPage);
+            getTransactions(newPage); // ✅ FIX: Removed user argument.
         }
     };
 
@@ -67,10 +67,10 @@ const DashboardPage = () => {
         const date = e.target.value;
         setFilterDate(date);
         if (date) {
-            getTransactionsByDate(date, user);
+            getTransactionsByDate(date); // ✅ FIX: Removed user argument.
         } else {
-            // If filter cleared, reset to first page
-            getTransactions(user, 1); 
+            // ✅ FIX: If filter cleared, reset to first page.
+            getTransactions(1); 
         }
     };
 
