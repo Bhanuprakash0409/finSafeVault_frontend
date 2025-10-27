@@ -1,7 +1,7 @@
 import React, { createContext, useReducer } from 'react';
 import axios from 'axios';
 
-const AUTH_API_URL = 'https://finsafe-tracker-api.onrender.com/api/ '; // ✅ CORRECTED
+const AUTH_API_URL = 'https://finsafe-tracker-api.onrender.com/api/'; // ✅ CORRECTED
 
 const initialState = {
   user: JSON.parse(localStorage.getItem('user')) || null,
