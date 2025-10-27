@@ -34,8 +34,10 @@ const transactionReducer = (state, action) => {
         balance: action.payload.balance, // ⬅️ NEW: Update balance from API
         isLoading: false 
       };
-    case 'ADD_SUCCESS':
-      return { ...state, transactions: [action.payload, ...state.transactions], isLoading: false };
+    case 'ADD_SUCCESS': // ✅ FIX: This case now only signals the end of the 'add' loading state.
+      // The transaction list is updated by the subsequent 'getTransactions' call.
+      return { ...state, isLoading: false };
+
     case 'FETCH_ANALYTICS_SUCCESS':
       return { ...state, analytics: action.payload, isLoading: false };
     case 'FETCH_FAIL':
@@ -85,11 +87,14 @@ export const TransactionProvider = ({ children }) => {
         },
       };
       const res = await axios.post(API_URL, transactionData, config);
-      dispatch({ type: 'ADD_SUCCESS', payload: res.data });
+      dispatch({ type: 'ADD_SUCCESS' }); // Dispatch success to turn off loading state.
       
       // ⬅️ NEW: Debugging log
       console.log('API Success Response:', res.data); 
       
+      // ✅ FIX: Refetch the first page of transactions to ensure the list is up-to-date.
+      getTransactions(1);
+
       return true;
     } catch (error) {
       // ⬅️ CRITICAL: Log the detailed error
@@ -112,7 +117,7 @@ export const TransactionProvider = ({ children }) => {
     } catch (error) {
         const message = error.response?.data?.message || error.message || 'Failed to fetch analytics';
         dispatch({ 
-            type: 'FETCH_FAIL', // Use generic fail type
+            type: 'FETCH_FAIL', // ✅ FIX: Use the generic 'FETCH_FAIL' type for consistency
             payload: message 
         });
     }
@@ -142,7 +147,7 @@ export const TransactionProvider = ({ children }) => {
 
           // Fetch both transactions and analytics in parallel for the given month
           const [transactionsRes, analyticsRes] = await Promise.all([
-              axios.get(API_URL + `?date=${year}-${String(month).padStart(2, '0')}-01`, config), // API_URL now includes /transactions/
+              axios.get(API_URL + `?year=${year}&month=${month}`, config), // ✅ FIX: Use year and month params to fetch all transactions for the month
               axios.get(API_URL + `analytics?year=${year}&month=${month}`, config) // API_URL now includes /transactions/
           ]);
 
