@@ -62,10 +62,14 @@ export const TransactionProvider = ({ children }) => {
     dispatch({ type: 'FETCH_START' }); 
     try {
       const res = await axios.get(API_URL + `?page=${page}`, config); // Now correctly forms /api/transactions?page=...
-      // ✅ FIX: Ensure the payload structure is consistent and what the reducer expects.
-      // This prevents crashes if the API response format changes slightly.
-      const payload = { ...res.data, page };
-      if (!payload.transactions) payload.transactions = []; // Ensure transactions is always an array.
+      // ✅ FIX: Ensure the payload structure is consistent and what the reducer expects,
+      // providing default values for all expected properties to prevent crashes.
+      const payload = {
+        transactions: res.data.transactions || [],
+        balance: res.data.balance || { totalIncome: 0, totalExpense: 0, netBalance: 0 },
+        page: res.data.page || page, // Use the requested page or default
+        pages: res.data.pages || 1,
+      };
       dispatch({ type: 'FETCH_SUCCESS', payload });
     } catch (error) {
       // More detailed error logging
@@ -135,8 +139,14 @@ export const TransactionProvider = ({ children }) => {
           const config = { headers: { Authorization: `Bearer ${user.token}` } }; 
           // Send date to the backend filtering endpoint
           const res = await axios.get(API_URL + `?date=${date}`, config); // Now correctly forms /api/transactions?date=...
-          // Display filtered results and reset pagination state
-          dispatch({ type: 'FETCH_SUCCESS', payload: { ...res.data, page: 1, pages: 1 } }); 
+          // ✅ FIX: Ensure the payload structure is consistent and what the reducer expects,
+          // providing default values for all expected properties to prevent crashes.
+          dispatch({ type: 'FETCH_SUCCESS', payload: {
+            transactions: res.data.transactions || [],
+            balance: res.data.balance || { totalIncome: 0, totalExpense: 0, netBalance: 0 },
+            page: 1, // Filtered results typically reset to page 1
+            pages: res.data.pages || 1,
+          }});
       } catch (error) {
           dispatch({ type: 'FETCH_FAIL', payload: error.response?.data?.message || 'Failed to fetch transactions for date' });
       }
@@ -158,9 +168,15 @@ export const TransactionProvider = ({ children }) => {
           // Dispatch actions to update state with the new data
           // ✅ FIX: Ensure the payload structure matches what the reducer expects.
           // The transaction data should be nested under a 'transactions' key.
-          dispatch({ 
-            type: 'FETCH_SUCCESS', 
-            payload: { transactions: transactionsRes.data.transactions, balance: transactionsRes.data.balance, page: 1, pages: transactionsRes.data.pages } });
+          dispatch({
+            type: 'FETCH_SUCCESS',
+            payload: {
+              transactions: transactionsRes.data.transactions || [],
+              balance: transactionsRes.data.balance || { totalIncome: 0, totalExpense: 0, netBalance: 0 },
+              page: 1, // Assuming monthly report always shows page 1
+              pages: transactionsRes.data.pages || 1,
+            }
+          });
           dispatch({ type: 'FETCH_ANALYTICS_SUCCESS', payload: analyticsRes.data });
       } catch (error) {
           dispatch({ type: 'FETCH_FAIL', payload: error.response?.data?.message || 'Failed to fetch monthly report data' });
