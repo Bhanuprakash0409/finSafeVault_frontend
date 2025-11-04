@@ -80,21 +80,21 @@ export const TransactionProvider = ({ children }) => {
   };
 
   // 2. Add Transaction
-  const addTransaction = async (transactionData) => {
+  const addTransaction = async (formData) => {
     dispatch({ type: 'ADD_START' });
     
     // ⬅️ NEW: Debugging log
-    console.log('API Payload:', transactionData); 
+    console.log('API Payload:', formData); 
     
     try {
       // ✅ FIX: Create config with the LATEST token right before the API call.
       const config = { 
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${user.token}`,
         },
       };
-      const res = await axios.post(API_URL, transactionData, config);
+      const res = await axios.post(API_URL, formData, config);
       dispatch({ type: 'ADD_SUCCESS' }); // Dispatch success to turn off loading state.
       
       // ⬅️ NEW: Debugging log
@@ -166,8 +166,6 @@ export const TransactionProvider = ({ children }) => {
           ]);
 
           // Dispatch actions to update state with the new data
-          // ✅ FIX: Ensure the payload structure matches what the reducer expects.
-          // The transaction data should be nested under a 'transactions' key.
           dispatch({
             type: 'FETCH_SUCCESS',
             payload: {

@@ -3,15 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 const LoginPage = () => {
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const { login, isLoading, error } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        // ✅ FIX: Pass credentials as a single object.
-        const success = await login({ email, password });
+        // Pass credentials to the login function
+        const success = await login(username, password);
         // ✅ FIX: Navigate on successful login.
         if (success) {
             navigate('/dashboard');
@@ -67,8 +67,8 @@ const LoginPage = () => {
                 <input
                     type="email"
                     placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     required
                     style={inputStyle}
                 />
