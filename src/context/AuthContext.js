@@ -49,7 +49,11 @@ export const AuthProvider = ({ children }) => {
   const login = async (username, password) => {
     dispatch({ type: 'AUTH_START' });
     try {
+
       const response = await axios.post(AUTH_API_URL + 'auth/login', { username, password });
+      if (response.status !== 200) {
+        throw new Error(response.data.message || 'Login failed');
+      }
       localStorage.setItem('user', JSON.stringify(response.data));
       dispatch({ type: 'AUTH_SUCCESS', payload: response.data });
       return true; // ✅ FIX: Return true on success

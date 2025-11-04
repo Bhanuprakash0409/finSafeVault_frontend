@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import DOMPurify from 'dompurify';
 import { AuthContext } from '../context/AuthContext';
 
 const LoginPage = () => {
@@ -9,6 +10,9 @@ const LoginPage = () => {
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
+        // Sanitize the inputs before sending them to the server.
+        const cleanUsername = DOMPurify.sanitize(username);
+        const cleanPassword = DOMPurify.sanitize(password);
         e.preventDefault();
         // Pass credentials to the login function
         const success = await login(username, password);
