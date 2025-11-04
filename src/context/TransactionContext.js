@@ -1,7 +1,7 @@
 import React, { createContext, useReducer, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from './AuthContext';
-const API_URL = 'https://finsafe-tracker-api.onrender.com/api/transactions'; // ✅ FIX: Removed trailing slash
+const API_URL = 'https://finsafe-tracker-api.onrender.com/api'; // ⬅️ Base URL ends at /api
 
 const initialState = {
   transactions: [],
@@ -61,7 +61,7 @@ export const TransactionProvider = ({ children }) => {
     const config = { headers: { Authorization: `Bearer ${user.token}` } }; 
     dispatch({ type: 'FETCH_START' }); 
     try {
-      const res = await axios.get(API_URL + `?page=${page}`, config); // Now correctly forms /api/transactions?page=...
+      const res = await axios.get(API_URL + `/transactions?page=${page}`, config);
       // ✅ FIX: Ensure the payload structure is consistent and what the reducer expects,
       // providing default values for all expected properties to prevent crashes.
       const payload = {
@@ -94,7 +94,7 @@ export const TransactionProvider = ({ children }) => {
           Authorization: `Bearer ${user.token}`,
         },
       };
-      const res = await axios.post(API_URL, formData, config);
+      const res = await axios.post(API_URL + '/transactions', formData, config);
       dispatch({ type: 'ADD_SUCCESS' }); // Dispatch success to turn off loading state.
       
       // ⬅️ NEW: Debugging log
@@ -120,7 +120,7 @@ export const TransactionProvider = ({ children }) => {
         // Define config here to ensure the latest token is used
         const config = { headers: { Authorization: `Bearer ${user.token}` } };
         // ⬅️ Pass year to the API
-        const res = await axios.get(`${API_URL}/analytics?year=${year}`, config); // ✅ FIX: Correctly forms /api/transactions/analytics
+        const res = await axios.get(API_URL + `/transactions/analytics?year=${year}`, config);
         dispatch({ type: 'FETCH_ANALYTICS_SUCCESS', payload: res.data });
     } catch (error) {
         const message = error.response?.data?.message || error.message || 'Failed to fetch analytics';
@@ -138,7 +138,7 @@ export const TransactionProvider = ({ children }) => {
       try {
           const config = { headers: { Authorization: `Bearer ${user.token}` } }; 
           // Send date to the backend filtering endpoint
-          const res = await axios.get(API_URL + `?date=${date}`, config); // Now correctly forms /api/transactions?date=...
+          const res = await axios.get(API_URL + `/transactions?date=${date}`, config);
           // ✅ FIX: Ensure the payload structure is consistent and what the reducer expects,
           // providing default values for all expected properties to prevent crashes.
           dispatch({ type: 'FETCH_SUCCESS', payload: {
@@ -161,8 +161,8 @@ export const TransactionProvider = ({ children }) => {
 
           // Fetch both transactions and analytics in parallel for the given month
           const [transactionsRes, analyticsRes] = await Promise.all([
-              axios.get(API_URL + `?year=${year}&month=${month}`, config),
-              axios.get(`${API_URL}/analytics?year=${year}&month=${month}`, config) // ✅ FIX: Correctly forms /api/transactions/analytics
+              axios.get(API_URL + `/transactions?year=${year}&month=${month}`, config),
+              axios.get(API_URL + `/transactions/analytics?year=${year}&month=${month}`, config)
           ]);
 
           // Dispatch actions to update state with the new data

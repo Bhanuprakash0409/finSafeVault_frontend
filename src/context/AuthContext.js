@@ -1,7 +1,7 @@
 import React, { createContext, useReducer } from 'react';
 import axios from 'axios';
 
-const API_URL = 'https://finsafe-tracker-api.onrender.com/api/auth';
+const AUTH_API_URL = 'https://finsafe-tracker-api.onrender.com/api/auth'; // ⬅️ Base URL ends at /auth
 
 const initialState = {
   user: JSON.parse(localStorage.getItem('user')) || null,
@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     dispatch({ type: 'AUTH_START' });
     try {
-      const response = await axios.post(API_URL + '/register', userData);
+      const response = await axios.post(AUTH_API_URL + '/register', userData);
       localStorage.setItem('user', JSON.stringify(response.data));
       dispatch({ type: 'AUTH_SUCCESS', payload: response.data });
     } catch (error) {
@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: 'AUTH_START' });
     try {
 
-      const response = await axios.post(API_URL + '/login', { username, password });
+      const response = await axios.post(AUTH_API_URL + '/login', { username, password });
       if (response.status !== 200) {
         throw new Error(response.data.message || 'Login failed');
       }
@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }) => {
       };
 
       // ✅ FIX: Use the correct API endpoint for updating settings
-      const res = await axios.put(API_URL + '/settings', userData, config);
+      const res = await axios.put(AUTH_API_URL + '/settings', userData, config);
 
       dispatch({ type: 'UPDATE_SUCCESS', payload: res.data });
       return true; // Indicate success
