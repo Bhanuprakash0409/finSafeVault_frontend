@@ -15,7 +15,7 @@ const LoginPage = () => {
         const cleanPassword = DOMPurify.sanitize(password);
         e.preventDefault();
         // Pass credentials to the login function
-        const success = await login(username, password);
+        const success = await login(cleanUsername, cleanPassword);
         // ✅ FIX: Navigate on successful login.
         if (success) {
             navigate('/dashboard');
