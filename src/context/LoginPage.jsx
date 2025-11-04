@@ -65,8 +65,8 @@ const LoginPage = () => {
             <form onSubmit={handleSubmit}>
                 {error && <p style={errorStyle}>{error}</p>}
                 <input
-                    type="email"
-                    placeholder="Email"
+                    type="text"
+                    placeholder="User Name"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
