@@ -1,9 +1,9 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import styles from './SettingsPage.module.css';
-
+ 
 const SettingsPage = () => {
-  const { user, updateMinBalance, isLoading, error } = useContext(AuthContext);
+  const { user, updateUser, isLoading, error } = useContext(AuthContext);
   
   // Initialize state from user context, ensuring it's not null
   const [minBalance, setMinBalance] = useState(user?.minBalance ?? 0);
@@ -18,8 +18,8 @@ const SettingsPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSuccessMessage(''); // Clear previous success message
-    const success = await updateMinBalance(minBalance);
+    setSuccessMessage(''); // Clear previous success message    
+    const success = await updateUser({ minBalance });
     if (success) {
       setSuccessMessage('Settings saved successfully!');
       // Hide message after 3 seconds
