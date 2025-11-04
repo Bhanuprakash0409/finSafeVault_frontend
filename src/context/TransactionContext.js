@@ -82,7 +82,7 @@ export const TransactionProvider = ({ children }) => {
   // 2. Add Transaction
   const addTransaction = async (formData) => {
     if (!user || !user.token) { // ⬅️ CRITICAL CHECK: Ensure user and token exist
-      dispatch({ type: 'ADD_FAIL', payload: 'Not authenticated. Please log in again.' });
+      dispatch({ type: 'ADD_FAIL', payload: 'Not authenticated. Please log in again.' }); 
       return false;
     }
 
@@ -95,7 +95,7 @@ export const TransactionProvider = ({ children }) => {
       // ✅ FIX: Create config with the LATEST token right before the API call.
       const config = { // ⬅️ Make sure you are creating config here
         headers: {
-          'Content-Type': 'application/json', // Using JSON for data, not form data
+          'Content-Type': 'application/json', // <--- REQUIRED FOR JSON PAYLOAD
           Authorization: `Bearer ${user.token}`,
         },
       };
