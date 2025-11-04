@@ -90,7 +90,7 @@ export const TransactionProvider = ({ children }) => {
       // ✅ FIX: Create config with the LATEST token right before the API call.
       const config = {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': 'multipart/form-data', // ⬅️ FIX: Ensure Content-Type is set
           Authorization: `Bearer ${user.token}`,
         },
       };
