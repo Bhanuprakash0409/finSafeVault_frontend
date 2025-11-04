@@ -5,7 +5,7 @@ import logo from '../assets/finsafe-vault.png'; // Import the logo
 import styles from './AuthForm.module.css'; // Import shared auth form styles
 
 const LoginPage = () => {
-  const [email, setEmail] = useState(''); // ✅ FIX: Use email state for login
+  const [username, setUsername] = useState(''); // Use username state for login
   const [password, setPassword] = useState('');
   const { login, user, error, isLoading } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ const LoginPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    login({ email, password }); // ✅ FIX: Pass email and password for login
+    login(username, password); // Pass username and password for login
   };
 
   return (
@@ -27,13 +27,13 @@ const LoginPage = () => {
         <h2>Sign in to FinSafe</h2>
         {error && <div className={styles.error}>{error.message || error}</div>} {/* Ensure error message is displayed */}
         <form onSubmit={handleSubmit}>
-          <div className={styles.inputGroup}>
-            <label>Email</label> {/* ✅ FIX: Change label to Email */}
+        <div className={styles.inputGroup}>
+            <label>Username</label> {/* Change label to Username */}
             <input
-              type="email" // ✅ FIX: Change input type to email
+              type="text" // Change input type to text
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)} // ✅ FIX: Update email state
+              value={username}
+              onChange={(e) => setUsername(e.target.value)} // Update username state
               className={styles.input}
             />
           </div>
