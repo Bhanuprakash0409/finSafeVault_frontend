@@ -22,6 +22,7 @@ const transactionReducer = (state, action) => {
   switch (action.type) {
     case 'FETCH_START':
     case 'ADD_START':
+    case 'DELETE_START':
       return { ...state, isLoading: true, error: null };
     case 'FETCH_SUCCESS':
       // The backend now sends an object with the transactions array and pagination info
@@ -42,7 +43,11 @@ const transactionReducer = (state, action) => {
       return { ...state, analytics: action.payload, isLoading: false };
     case 'FETCH_FAIL':
     case 'ADD_FAIL':
+    case 'DELETE_FAIL':
       return { ...state, isLoading: false, error: action.payload };
+    case 'DELETE_SUCCESS':
+      // Refetch transactions to get the updated list
+      return { ...state, isLoading: false };
     default:
       return state;
   }
@@ -117,6 +122,28 @@ export const TransactionProvider = ({ children }) => {
     }
   };
 
+  // NEW: Delete Transaction
+  const deleteTransaction = async (id) => {
+    if (!user || !user.token) {
+      dispatch({ type: 'DELETE_FAIL', payload: 'Not authenticated.' });
+      return false;
+    }
+    dispatch({ type: 'DELETE_START' });
+    try {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      };
+      await axios.delete(`${API_URL}/transactions/${id}`, config);
+      dispatch({ type: 'DELETE_SUCCESS' });
+      getTransactions(state.currentPage); // Refetch current page
+      return true;
+    } catch (error) {
+      dispatch({ type: 'DELETE_FAIL', payload: error.response?.data?.message || 'Failed to delete transaction' });
+      return false;
+    }
+  };
   // 3. Fetch Analytics Data
   const getAnalyticsData = async (year) => { // ⬅️ ACCEPTS YEAR
     if (!user) return;
@@ -193,6 +220,7 @@ export const TransactionProvider = ({ children }) => {
         ...state, 
         getTransactions, 
         addTransaction,
+        deleteTransaction, // ⬅️ NEW EXPORT
         getAnalyticsData,
         getTransactionsByDate, // ⬅️ NEW EXPORT
         getMonthlyReportData,  // ➡️ NEW EXPORT
