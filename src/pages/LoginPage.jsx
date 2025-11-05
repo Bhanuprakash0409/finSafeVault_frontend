@@ -1,8 +1,8 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import logo from '../assets/finsafe-vault.png'; // Import the logo
-import styles from './AuthForm.module.css'; // Import shared auth form styles
+import logo from '../assets/finsafe-vault.png'; 
+import styles from './AuthForm.module.css'; 
 
 const LoginPage = () => {
   const [username, setUsername] = useState(''); // Use username state for login
