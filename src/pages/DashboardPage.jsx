@@ -161,7 +161,14 @@ const DashboardPage = () => {
             new Date(t.date).toLocaleDateString(),
             t.category,
             t.note || '-',
-            { content: `${t.type === 'income' ? '+' : '-'} ₹ ${t.amount.toFixed(2)}`, styles: { halign: 'right', textColor: t.type === 'income' ? CHART_COLORS[1] : CHART_COLORS[0] } }
+            { 
+                // ⬅️ FIX: Ensure no space between minus/plus sign and currency symbol
+                content: `${t.type === 'income' ? '+' : '-'}₹${t.amount.toFixed(2)}`, 
+                styles: { 
+                    halign: 'right', 
+                    textColor: t.type === 'income' ? [16, 185, 129] : [239, 68, 68] 
+                } 
+            }
         ]);
 
         autoTable(doc, { 
@@ -262,6 +269,21 @@ const DashboardPage = () => {
                         <label>Filter by Date:</label>
                         <input type="date" value={filterDate} onChange={handleDateFilter} className={styles.dateInput} />
                     </div>
+                    {/* ✅ FIX: Add the Year Selector for Analytics */}
+                    <div className={styles.controlGroup}>
+                        <label>Analytics Year:</label>
+                        <select
+                            value={analysisYear}
+                            onChange={(e) => setAnalysisYear(parseInt(e.target.value, 10))}
+                            className={styles.dateInput}
+                        >
+                            {getYearOptions().map(year => (
+                                <option key={year} value={year}>
+                                    {year}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
 
                 {/* Loading/Error State */}
@@ -270,8 +292,14 @@ const DashboardPage = () => {
                 {/* 3. Transaction List Table */}
                 <div className={styles.tableContainer}>
                     <table className={styles.transactionTable}>
-                        {/* Table Head remains the same */}
-                        {/* Table Body remains the same, using 'transactions' state */}
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Category</th>
+                                <th>Note</th>
+                                <th style={{ textAlign: 'right' }}>Amount</th>
+                            </tr>
+                        </thead>
                         <tbody>
                             {transactions.length > 0 ? (
                                 transactions.map((t) => (

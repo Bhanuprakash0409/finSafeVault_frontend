@@ -20,8 +20,7 @@ const initialState = {
 
 const transactionReducer = (state, action) => {
   switch (action.type) {
-    case 'FETCH_START':
-    case 'ADD_START':
+    case 'FETCH_START':    case 'ADD_START':
     case 'DELETE_START':
       return { ...state, isLoading: true, error: null };
     case 'FETCH_SUCCESS':
