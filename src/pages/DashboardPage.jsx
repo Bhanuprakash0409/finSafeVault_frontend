@@ -32,7 +32,6 @@ const DashboardPage = () => {
     // Local States
     const [filterDate, setFilterDate] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
-    // ⬅️ ANALYSIS YEAR STATE FOR CHARTS
     const [analysisYear, setAnalysisYear] = useState(new Date().getFullYear());
     const [exportDate, setExportDate] = useState({
         year: new Date().getFullYear(),
@@ -44,10 +43,7 @@ const DashboardPage = () => {
     // --- Data Fetching Effect (Triggers on Login and Year Change) ---
     useEffect(() => {
         if (user) {
-            // Fetch initial 10 transactions (page 1)
             getTransactions(1);
-
-            // ⬅️ FETCH ANALYTICS: Use the analysisYear state for filtering charts
             getAnalyticsData(analysisYear);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -56,14 +52,12 @@ const DashboardPage = () => {
 
     // --- Handlers for User Interaction ---
 
-    // Handler for Pagination
     const handlePageChange = (newPage) => {
         if (newPage >= 1 && newPage <= totalPages) {
             getTransactions(newPage);
         }
     };
 
-    // Handler for Date Filter
     const handleDateFilter = (e) => {
         const date = e.target.value;
         setFilterDate(date);
@@ -74,7 +68,6 @@ const DashboardPage = () => {
         }
     };
 
-    // Helper for Year Selector Options
     const getYearOptions = () => {
         const currentYear = new Date().getFullYear();
         const years = [];
@@ -99,13 +92,11 @@ const DashboardPage = () => {
         let allTransactions;
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            // Fetch ALL transactions for the selected month (unpaginated)
             const { data } = await axios.get(
-                // Use month and year from the exportDate state
-                `${API_BASE}?year=${exportDate.year}&month=${exportDate.month}&all=true`, 
+                `${API_BASE}?year=${exportDate.year}&month=${exportDate.month}&all=true`,
                 config
             );
-            allTransactions = data.transactions; 
+            allTransactions = data.transactions;
         } catch (err) {
             alert('Failed to fetch full report data. Please try adding some transactions.');
             return;
@@ -119,14 +110,15 @@ const DashboardPage = () => {
         const doc = new jsPDF();
         const pageHeight = doc.internal.pageSize.height;
         let yPos = 20;
+        const centerOffset = 105; // Center point for A4 is 105mm
 
         const reportMonth = new Date(exportDate.year, exportDate.month - 1).toLocaleString('en-US', { month: 'long', year: 'numeric' });
 
         // --- 1. Report Title ---
         doc.setFontSize(22);
-        doc.text(`FinSafe Financial Report`, 105, yPos, { align: 'center' });
+        doc.text(`FinSafe Financial Report`, centerOffset, yPos, { align: 'center' });
         doc.setFontSize(14);
-        doc.text(`Period: ${reportMonth}`, 105, yPos + 7, { align: 'center' });
+        doc.text(`Period: ${reportMonth}`, centerOffset, yPos + 7, { align: 'center' });
         yPos += 20;
 
         // --- 2. Monthly Summary ---
@@ -137,9 +129,10 @@ const DashboardPage = () => {
         autoTable(doc, {
             startY: yPos,
             body: [
-                ['Total Income', `₹${monthlyIncome.toFixed(2)}`],
-                ['Total Expense', `₹${monthlyExpense.toFixed(2)}`],
-                ['Net Balance', `₹${monthlyNet.toFixed(2)}`],
+                // ⬅️ FIX 1: Corrected currency symbol and tight spacing
+                ['Total Income', `₹ ${monthlyIncome.toFixed(2)}`],
+                ['Total Expense', `₹ ${monthlyExpense.toFixed(2)}`],
+                ['Net Balance', `₹ ${monthlyNet.toFixed(2)}`],
             ],
             theme: 'grid',
             styles: { fontSize: 12 },
@@ -157,7 +150,7 @@ const DashboardPage = () => {
             t.category,
             t.note || '-',
             {
-                // ⬅️ FIX: Remove spacing from amount string
+                // ⬅️ FIX 1: Corrected currency symbol and tight spacing
                 content: `${t.type === 'income' ? '+' : '-'}₹${t.amount.toFixed(2)}`,
                 styles: {
                     halign: 'right',
@@ -177,7 +170,6 @@ const DashboardPage = () => {
         });
 
         // --- 4. Add Charts (Capture from screen) ---
-        // Charts use analysisYear, which is current by default or set by user.
         yPos = doc.lastAutoTable.finalY + 15;
 
         // Check if there is enough vertical space for both charts
@@ -191,7 +183,8 @@ const DashboardPage = () => {
             doc.setFontSize(16);
             doc.text('Expense Distribution', 14, yPos);
             const canvas = await html2canvas(pieChartElement, { scale: 2, backgroundColor: '#ffffff' });
-            doc.addImage(canvas.toDataURL('image/png'), 'PNG', 14, yPos + 8, 90, 90);
+            // ⬅️ FIX 2: Centering Pie Chart (Chart width 90mm, start X at ~60mm)
+            doc.addImage(canvas.toDataURL('image/png'), 'PNG', 60, yPos + 8, 90, 90);
             yPos += 105;
         }
 
@@ -201,7 +194,8 @@ const DashboardPage = () => {
             doc.setFontSize(16);
             doc.text('Monthly Spending Trend', 14, yPos);
             const barCanvas = await html2canvas(barChartElement, { scale: 2, backgroundColor: '#ffffff' });
-            doc.addImage(barCanvas.toDataURL('image/png'), 'PNG', 14, yPos + 8, 180, 90);
+            // ⬅️ FIX 2: Centering Bar Chart (Chart width 180mm, start X at ~15mm)
+            doc.addImage(barCanvas.toDataURL('image/png'), 'PNG', 15, yPos + 8, 180, 90);
         }
 
         doc.save(`FinSafe_Report_${reportMonth.replace(' ', '_')}.pdf`);
@@ -265,7 +259,7 @@ const DashboardPage = () => {
                         <label>Filter by Date:</label>
                         <input type="date" value={filterDate} onChange={handleDateFilter} className={styles.dateInput} />
                     </div>
-                     {/* ⬅️ FIX: Add the Year Selector for Analytics to the filter bar */}
+                     {/* ⬅️ FIX 3: Aligned Analytics Year (same row, moved to the right) */}
                     <div className={styles.controlGroup}>
                         <label>Analytics Year:</label>
                         <select
@@ -292,7 +286,7 @@ const DashboardPage = () => {
                             <tr>
                                 <th>Date</th>
                                 <th>Category</th>
-                                <th>Note</th> {/* Note column remains visible */}
+                                <th>Note</th> 
                                 <th style={{ textAlign: 'right' }}>Amount (₹)</th>
                             </tr>
                         </thead>
