@@ -11,11 +11,10 @@ import html2canvas from 'html2canvas';
 import autoTable from 'jspdf-autotable';
 import axios from 'axios';
 
-// NOTE: You must have created the DashboardPage.module.css and imported utility constants.
 import styles from './DashboardPage.module.css';
 import { CHART_COLORS } from '../utils/constants';
 
-// Utility function for Indian Rupee format (Lakhs/Thousands) - Defined outside the component
+// Utility function for Indian Rupee format (Lakhs/Thousands)
 const formatCurrencyINR = (num) => {
     if (num === null || num === undefined) return '₹ 0.00';
     const number = Math.abs(num).toFixed(2);
@@ -30,8 +29,7 @@ const formatCurrencyINR = (num) => {
     const result = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree;
     
     const sign = num < 0 ? '-' : '';
-    // ✅ FIX: Ensure the rupee symbol is tight to the amount (e.g., ₹1,000.00)
-    return `${sign}₹${result}.${decimalPart}`; 
+    return `${sign}₹ ${result}.${decimalPart}`; 
 };
 
 
@@ -112,12 +110,13 @@ const DashboardPage = () => {
         let allTransactions;
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            // FIX: Use 'exportDate' state for fetching the full month's data
+            // ✅ FIX: Use 'all=true' and month/year to fetch ALL records for the selected period
             const { data } = await axios.get(
                 `${API_BASE}?year=${exportDate.year}&month=${exportDate.month}&all=true`,
                 config
             );
-            allTransactions = data.transactions;
+            // Assuming the backend returns { transactions: [...] } when 'all=true'
+            allTransactions = data.transactions; 
         } catch (err) {
             alert('Failed to fetch full report data. Please ensure you have transactions for the selected month.');
             return;
@@ -150,7 +149,6 @@ const DashboardPage = () => {
         autoTable(doc, {
             startY: yPos,
             body: [
-                // ✅ FIX: Use the clean INR format utility for PDF summary
                 ['Total Income', formatCurrencyINR(monthlyIncome)],
                 ['Total Expense', formatCurrencyINR(monthlyExpense)],
                 ['Net Balance', formatCurrencyINR(monthlyNet)],
@@ -171,7 +169,6 @@ const DashboardPage = () => {
             t.category,
             t.note || '-',
             {
-                // ✅ FIX: Use the clean INR format utility for the table amounts
                 content: formatCurrencyINR(t.type === 'income' ? t.amount : -t.amount),
                 styles: {
                     halign: 'right',
@@ -204,7 +201,6 @@ const DashboardPage = () => {
             doc.setFontSize(16);
             doc.text('Expense Distribution', 14, yPos);
             const canvas = await html2canvas(pieChartElement, { scale: 2, backgroundColor: '#ffffff' });
-            // Centering Pie Chart
             doc.addImage(canvas.toDataURL('image/png'), 'PNG', 60, yPos + 8, 90, 90);
             yPos += 105;
         }
@@ -215,7 +211,6 @@ const DashboardPage = () => {
             doc.setFontSize(16);
             doc.text('Monthly Spending Trend', 14, yPos);
             const barCanvas = await html2canvas(barChartElement, { scale: 2, backgroundColor: '#ffffff' });
-            // Centering Bar Chart
             doc.addImage(barCanvas.toDataURL('image/png'), 'PNG', 15, yPos + 8, 180, 90);
         }
 
@@ -275,16 +270,17 @@ const DashboardPage = () => {
 
                 {/* 2. Transaction List Header and Filter */}
                 <div className={styles.filterBar} style={{ justifyContent: 'space-between' }}>
-                    {/* ⬅️ LEFT: Transaction History Header and Date Filter (Row 1) */}
+                    
+                    {/* ⬅️ LEFT: Transaction History Header and Date Filter */}
                     <div className={styles.controlGroup}>
                         <h3>Transaction History</h3>
                         <label>Filter by Date:</label>
                         <input type="date" value={filterDate} onChange={handleDateFilter} className={styles.dateInput} />
                     </div>
                     
-                    {/* ⬅️ RIGHT: Analytics Year Selector (Row 1) */}
+                    {/* ⬅️ FIX: Align Analytics Year Selector (moved to bottom row) */}
                     <div className={styles.controlGroup}>
-                        {/* 🛑 This is now redundant and will be moved */}
+                        {/* Empty control group to maintain space, will be used by filterDate */}
                     </div>
                 </div>
 
@@ -325,8 +321,9 @@ const DashboardPage = () => {
                     </table>
                 </div>
 
-                {/* Pagination Controls */}
+                {/* Pagination Controls AND Analytics Year (Combined Row) */}
                 <div className={styles.filterBar} style={{ justifyContent: 'space-between', marginTop: '20px' }}>
+                    
                     {/* LEFT: Pagination Buttons */}
                     {(totalPages > 1) && !filterDate && (
                         <div className={styles.paginationContainer}>
@@ -340,7 +337,7 @@ const DashboardPage = () => {
                         </div>
                     )}
                     
-                    {/* ⬅️ FIX: Analytics Year moved to bottom right (same line as pagination) */}
+                    {/* ⬅️ FIX: Analytics Year is here, aligned to the right (beside pagination) */}
                     <div className={styles.controlGroup}>
                         <label>Analytics Year:</label>
                         <select
