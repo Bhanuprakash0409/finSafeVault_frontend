@@ -5,33 +5,26 @@ import SummaryCard from '../components/SummaryCard';
 import AddTransactionModal from '../components/AddTransactionModal';
 import CategoryPieChart from '../components/CategoryPieChart';
 import MonthlyBarChart from '../components/MonthlyBarChart';
-// PDF Export Dependencies
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import autoTable from 'jspdf-autotable';
 import axios from 'axios';
-
 import styles from './DashboardPage.module.css';
-import { CHART_COLORS } from '../utils/constants';
 
-// Utility function for Indian Rupee format (Lakhs/Thousands)
+// ✅ Utility function for Indian Rupee format (Lakhs/Thousands)
 const formatCurrencyINR = (num) => {
-    if (num === null || num === undefined) return '₹ 0.00';
-    const number = Math.abs(num).toFixed(2);
-    const [integerPart, decimalPart] = number.split('.');
-    
+    if (num === null || num === undefined) return '₹0.00';
+    const absNum = Math.abs(num).toFixed(2);
+    const [integerPart, decimalPart] = absNum.split('.');
     let lastThree = integerPart.substring(integerPart.length - 3);
     const otherNumbers = integerPart.substring(0, integerPart.length - 3);
-    
     if (otherNumbers !== '') {
         lastThree = ',' + lastThree;
     }
     const result = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree;
-    
     const sign = num < 0 ? '-' : '';
-    return `${sign}₹ ${result}.${decimalPart}`; 
+    return `${sign}₹${result}.${decimalPart}`;
 };
-
 
 const DashboardPage = () => {
     const { user } = useContext(AuthContext);
@@ -47,7 +40,6 @@ const DashboardPage = () => {
         error
     } = useContext(TransactionContext);
 
-    // Local States
     const [filterDate, setFilterDate] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [analysisYear, setAnalysisYear] = useState(new Date().getFullYear());
@@ -58,7 +50,6 @@ const DashboardPage = () => {
 
     const API_BASE = 'https://finsafe-tracker-api.onrender.com/api/transactions'; 
 
-    // --- Data Fetching Effect (Triggers on Login and Year Change) ---
     useEffect(() => {
         if (user) {
             getTransactions(1);
@@ -66,9 +57,6 @@ const DashboardPage = () => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user, analysisYear]);
-
-
-    // --- Handlers for User Interaction ---
 
     const handlePageChange = (newPage) => {
         if (newPage >= 1 && newPage <= totalPages) {
@@ -97,53 +85,61 @@ const DashboardPage = () => {
 
     const handleExportDateChange = (e) => {
         const [year, month] = e.target.value.split('-');
-        const yearNum = parseInt(year, 10);
-        const monthNum = parseInt(month, 10);
-        setExportDate({ year: yearNum, month: monthNum });
+        setExportDate({ year: parseInt(year, 10), month: parseInt(month, 10) });
     };
 
-
-    // ➡️ PDF GENERATION FUNCTION (Monthly Report)
+    // ✅ PDF GENERATION FUNCTION (Only Selected Month Transactions)
     const downloadMonthlyReportPDF = async () => {
         if (!user || !user.token) return;
 
-        let allTransactions;
+        let allTransactions = [];
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            // ✅ FIX: Use 'all=true' and month/year to fetch ALL records for the selected period
+            // ✅ FIX: Fetch transactions only for the selected month & year
             const { data } = await axios.get(
-                `${API_BASE}?year=${exportDate.year}&month=${exportDate.month}&all=true`,
+                `${API_BASE}?year=${exportDate.year}&month=${exportDate.month}`,
                 config
             );
-            // Assuming the backend returns { transactions: [...] } when 'all=true'
-            allTransactions = data.transactions; 
+            allTransactions = data.transactions || [];
         } catch (err) {
-            alert('Failed to fetch full report data. Please ensure you have transactions for the selected month.');
+            alert('Failed to fetch data. Please ensure transactions exist for this month.');
             return;
         }
 
-        if (!allTransactions || allTransactions.length === 0) {
-            alert('No transactions found for the selected month to generate a report.');
+        // ✅ Filter only transactions within the selected month (safety check)
+        allTransactions = allTransactions.filter(t => {
+            const tDate = new Date(t.date);
+            return (
+                tDate.getFullYear() === exportDate.year &&
+                tDate.getMonth() + 1 === exportDate.month
+            );
+        });
+
+        if (allTransactions.length === 0) {
+            alert('No transactions found for the selected month.');
             return;
         }
 
         const doc = new jsPDF();
         const pageHeight = doc.internal.pageSize.height;
         let yPos = 20;
-        const centerOffset = 105; 
+        const centerOffset = 105;
 
-        const reportMonth = new Date(exportDate.year, exportDate.month - 1).toLocaleString('en-US', { month: 'long', year: 'numeric' });
+        const reportMonth = new Date(exportDate.year, exportDate.month - 1).toLocaleString('en-US', {
+            month: 'long',
+            year: 'numeric'
+        });
 
-        // --- 1. Report Title ---
+        // Title
         doc.setFontSize(22);
-        doc.text(`FinSafe Financial Report`, centerOffset, yPos, { align: 'center' });
+        doc.text('FinSafe Financial Report', centerOffset, yPos, { align: 'center' });
         doc.setFontSize(14);
         doc.text(`Period: ${reportMonth}`, centerOffset, yPos + 7, { align: 'center' });
         yPos += 20;
 
-        // --- 2. Monthly Summary ---
-        const monthlyIncome = allTransactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
-        const monthlyExpense = allTransactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+        // Monthly Summary
+        const monthlyIncome = allTransactions.filter(t => t.type === 'income').reduce((a, b) => a + b.amount, 0);
+        const monthlyExpense = allTransactions.filter(t => t.type === 'expense').reduce((a, b) => a + b.amount, 0);
         const monthlyNet = monthlyIncome - monthlyExpense;
 
         autoTable(doc, {
@@ -156,14 +152,13 @@ const DashboardPage = () => {
             theme: 'grid',
             styles: { fontSize: 12 },
         });
+
         yPos = doc.lastAutoTable.finalY + 15;
 
-        // --- 3. Transaction Table ---
-        if (yPos > pageHeight - 40) { doc.addPage(); yPos = 20; }
+        // Transaction Table
         doc.setFontSize(16);
         doc.text('Transaction History', 14, yPos);
 
-        // Data mapping for autoTable
         const tableBody = allTransactions.map(t => [
             new Date(t.date).toLocaleDateString(),
             t.category,
@@ -187,42 +182,36 @@ const DashboardPage = () => {
             columnStyles: { 3: { halign: 'right' } }
         });
 
-        // --- 4. Add Charts (Capture from screen) ---
+        // ✅ Add Charts (Pie + Bar)
         yPos = doc.lastAutoTable.finalY + 15;
-
-        // Check if there is enough vertical space for both charts
         if (yPos > pageHeight - 200) { doc.addPage(); yPos = 20; }
 
-        const pieChartElement = document.querySelector('#pie-chart-container');
-        const barChartElement = document.querySelector('#bar-chart-container');
+        const pieChart = document.querySelector('#pie-chart-container');
+        const barChart = document.querySelector('#bar-chart-container');
 
-        // Capture Pie Chart
-        if (pieChartElement) {
+        if (pieChart) {
             doc.setFontSize(16);
             doc.text('Expense Distribution', 14, yPos);
-            const canvas = await html2canvas(pieChartElement, { scale: 2, backgroundColor: '#ffffff' });
+            const canvas = await html2canvas(pieChart, { scale: 2, backgroundColor: '#fff' });
             doc.addImage(canvas.toDataURL('image/png'), 'PNG', 60, yPos + 8, 90, 90);
             yPos += 105;
         }
 
-        // Capture Bar Chart
-        if (barChartElement) {
+        if (barChart) {
             if (yPos > pageHeight - 100) { doc.addPage(); yPos = 20; }
             doc.setFontSize(16);
             doc.text('Monthly Spending Trend', 14, yPos);
-            const barCanvas = await html2canvas(barChartElement, { scale: 2, backgroundColor: '#ffffff' });
+            const barCanvas = await html2canvas(barChart, { scale: 2, backgroundColor: '#fff' });
             doc.addImage(barCanvas.toDataURL('image/png'), 'PNG', 15, yPos + 8, 180, 90);
         }
 
         doc.save(`FinSafe_Report_${reportMonth.replace(' ', '_')}.pdf`);
     };
 
-    // --- Styling Variables (Currency/Color) ---
     const incomeColor = '#10B981';
     const expenseColor = '#EF4444';
     const balanceColor = balance.netBalance >= 0 ? '#3B82F6' : expenseColor;
 
-    // --- CRITICAL FIX: Add a loading state check ---
     if (isLoading && transactions.length === 0) {
         return <div className={styles.loadingContainer}>Loading Your FinSafe Dashboard...</div>;
     }
@@ -232,8 +221,7 @@ const DashboardPage = () => {
 
     return (
         <div className={styles.dashboardContainer}>
-            {/* Action Buttons & Export Controls (no-print) */}
-            <div className={`${styles.actionBar}`}>
+            <div className={styles.actionBar}>
                 <h2 className={styles.header}>
                     Hello, {user?.name?.split(' ')[0]}!
                     <span className={styles.minBalance}>
@@ -242,10 +230,14 @@ const DashboardPage = () => {
                 </h2>
 
                 <div className={styles.actions}>
-                    {/* Month/Year Selector for PDF Export */}
                     <div className={styles.controlGroup}>
                         <label>Report Month:</label>
-                        <input type="month" value={`${exportDate.year}-${String(exportDate.month).padStart(2, '0')}`} onChange={handleExportDateChange} className={styles.dateInput} />
+                        <input
+                            type="month"
+                            value={`${exportDate.year}-${String(exportDate.month).padStart(2, '0')}`}
+                            onChange={handleExportDateChange}
+                            className={styles.dateInput}
+                        />
                     </div>
 
                     <button onClick={downloadMonthlyReportPDF} className={`${styles.actionButton} ${styles.pdfButton}`}>
@@ -258,43 +250,34 @@ const DashboardPage = () => {
                 </div>
             </div>
 
-            {/* Content that is captured for PDF */}
             <div id="dashboard-report-content" className={styles.reportContent}>
-
-                {/* 1. Summary Cards */}
+                {/* Summary Cards */}
                 <div className={styles.summaryContainer}>
                     <SummaryCard title="Total Income" value={balance.totalIncome} color={incomeColor} currencyFormatter={formatCurrencyINR}/>
                     <SummaryCard title="Total Expense" value={balance.totalExpense} color={expenseColor} currencyFormatter={formatCurrencyINR}/>
                     <SummaryCard title="Net Balance" value={balance.netBalance} color={balanceColor} currencyFormatter={formatCurrencyINR}/>
                 </div>
 
-                {/* 2. Transaction List Header and Filter */}
+                {/* Filter Bar (Filter Date Top, Analytics Year Moved Bottom) */}
                 <div className={styles.filterBar} style={{ justifyContent: 'space-between' }}>
-                    
-                    {/* ⬅️ LEFT: Transaction History Header and Date Filter */}
                     <div className={styles.controlGroup}>
                         <h3>Transaction History</h3>
                         <label>Filter by Date:</label>
-                        <input type="date" value={filterDate} onChange={handleDateFilter} className={styles.dateInput} />
+                        <input type="date" value={filterDate} onChange={handleDateFilter} className={styles.dateInput}/>
                     </div>
-                    
-                    {/* ⬅️ FIX: Align Analytics Year Selector (moved to bottom row) */}
-                    <div className={styles.controlGroup}>
-                        {/* Empty control group to maintain space, will be used by filterDate */}
-                    </div>
+                    <div className={styles.controlGroup}></div>
                 </div>
 
-                {/* Loading/Error State */}
                 {error && <p className={styles.errorMessage}>Error: {error}</p>}
 
-                {/* 3. Transaction List Table */}
+                {/* Transactions Table */}
                 <div className={styles.tableContainer}>
                     <table className={styles.transactionTable}>
                         <thead>
                             <tr>
                                 <th>Date</th>
                                 <th>Category</th>
-                                <th>Note</th> 
+                                <th>Note</th>
                                 <th style={{ textAlign: 'right' }}>Amount (₹)</th>
                             </tr>
                         </thead>
@@ -303,9 +286,13 @@ const DashboardPage = () => {
                                 transactions.map((t) => (
                                     <tr key={t._id}>
                                         <td>{new Date(t.date).toLocaleDateString()}</td>
-                                        <td style={{fontWeight: 'bold'}}>{t.category}</td>
+                                        <td style={{ fontWeight: 'bold' }}>{t.category}</td>
                                         <td>{t.note || '-'}</td>
-                                        <td style={{ fontWeight: 'bold', color: t.type === 'income' ? incomeColor : expenseColor, textAlign: 'right' }}>
+                                        <td style={{
+                                            fontWeight: 'bold',
+                                            color: t.type === 'income' ? incomeColor : expenseColor,
+                                            textAlign: 'right'
+                                        }}>
                                             {formatCurrencyINR(t.type === 'income' ? t.amount : -t.amount)}
                                         </td>
                                     </tr>
@@ -321,23 +308,20 @@ const DashboardPage = () => {
                     </table>
                 </div>
 
-                {/* Pagination Controls AND Analytics Year (Combined Row) */}
+                {/* Pagination & Analytics Year (Bottom Right) */}
                 <div className={styles.filterBar} style={{ justifyContent: 'space-between', marginTop: '20px' }}>
-                    
-                    {/* LEFT: Pagination Buttons */}
                     {(totalPages > 1) && !filterDate && (
                         <div className={styles.paginationContainer}>
-                            <button onClick={() => handlePageChange(currentPage - 1)} disabled={isLoading || currentPage === 1} className={styles.actionButton} style={{backgroundColor: '#FF8042'}}>
+                            <button onClick={() => handlePageChange(currentPage - 1)} disabled={isLoading || currentPage === 1} className={styles.actionButton} style={{ backgroundColor: '#FF8042' }}>
                                 Previous
                             </button>
                             <span className={styles.pageInfo}>Page {currentPage} of {totalPages}</span>
-                            <button onClick={() => handlePageChange(currentPage + 1)} disabled={isLoading || currentPage === totalPages} className={styles.actionButton} style={{backgroundColor: '#4CAF50'}}>
+                            <button onClick={() => handlePageChange(currentPage + 1)} disabled={isLoading || currentPage === totalPages} className={styles.actionButton} style={{ backgroundColor: '#4CAF50' }}>
                                 Next
                             </button>
                         </div>
                     )}
-                    
-                    {/* ⬅️ FIX: Analytics Year is here, aligned to the right (beside pagination) */}
+
                     <div className={styles.controlGroup}>
                         <label>Analytics Year:</label>
                         <select
@@ -346,21 +330,18 @@ const DashboardPage = () => {
                             className={styles.dateInput}
                         >
                             {getYearOptions().map(year => (
-                                <option key={year} value={year}>
-                                    {year}
-                                </option>
+                                <option key={year} value={year}>{year}</option>
                             ))}
                         </select>
                     </div>
                 </div>
 
-                {/* 4. Charts Integration */}
+                {/* Charts */}
                 <div className={styles.chartsGrid}>
                     <div id="pie-chart-container" className={styles.chartContainer}>
                         <h3 className={styles.chartTitle}>Expense Distribution</h3>
                         <CategoryPieChart />
                     </div>
-
                     <div id="bar-chart-container" className={styles.chartContainer}>
                         <h3 className={styles.chartTitle}>Monthly Spending Trend (Year: {analysisYear})</h3>
                         <MonthlyBarChart />
@@ -368,7 +349,6 @@ const DashboardPage = () => {
                 </div>
             </div>
 
-            {/* Modal Render */}
             {isModalOpen && <AddTransactionModal onClose={() => setIsModalOpen(false)} />}
         </div>
     );
