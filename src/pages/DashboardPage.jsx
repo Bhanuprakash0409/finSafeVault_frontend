@@ -15,6 +15,25 @@ import axios from 'axios';
 import styles from './DashboardPage.module.css';
 import { CHART_COLORS } from '../utils/constants';
 
+// Utility function for Indian Rupee format (Lakhs/Thousands) - Defined outside the component
+const formatCurrencyINR = (num) => {
+    if (num === null || num === undefined) return '₹ 0.00';
+    const number = Math.abs(num).toFixed(2);
+    const [integerPart, decimalPart] = number.split('.');
+    
+    let lastThree = integerPart.substring(integerPart.length - 3);
+    const otherNumbers = integerPart.substring(0, integerPart.length - 3);
+    
+    if (otherNumbers !== '') {
+        lastThree = ',' + lastThree;
+    }
+    const result = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree;
+    
+    const sign = num < 0 ? '-' : '';
+    return `${sign}₹ ${result}.${decimalPart}`;
+};
+
+
 const DashboardPage = () => {
     const { user } = useContext(AuthContext);
     const {
@@ -38,7 +57,7 @@ const DashboardPage = () => {
         month: new Date().getMonth() + 1
     });
 
-    const API_BASE = 'https://finsafe-tracker-api.onrender.com/api/transactions'; // Live API URL
+    const API_BASE = 'https://finsafe-tracker-api.onrender.com/api/transactions'; 
 
     // --- Data Fetching Effect (Triggers on Login and Year Change) ---
     useEffect(() => {
@@ -71,7 +90,7 @@ const DashboardPage = () => {
     const getYearOptions = () => {
         const currentYear = new Date().getFullYear();
         const years = [];
-        for (let i = 0; i < 5; i++) { // Show current year and 4 past years
+        for (let i = 0; i < 5; i++) {
             years.push(currentYear - i);
         }
         return years;
@@ -110,7 +129,7 @@ const DashboardPage = () => {
         const doc = new jsPDF();
         const pageHeight = doc.internal.pageSize.height;
         let yPos = 20;
-        const centerOffset = 105; // Center point for A4 is 105mm
+        const centerOffset = 105; 
 
         const reportMonth = new Date(exportDate.year, exportDate.month - 1).toLocaleString('en-US', { month: 'long', year: 'numeric' });
 
@@ -129,10 +148,10 @@ const DashboardPage = () => {
         autoTable(doc, {
             startY: yPos,
             body: [
-                // ⬅️ FIX 1: Corrected currency symbol and tight spacing
-                ['Total Income', `₹ ${monthlyIncome.toFixed(2)}`],
-                ['Total Expense', `₹ ${monthlyExpense.toFixed(2)}`],
-                ['Net Balance', `₹ ${monthlyNet.toFixed(2)}`],
+                // ⬅️ FIX 1: Use the new INR format utility for PDF summary
+                ['Total Income', formatCurrencyINR(monthlyIncome)],
+                ['Total Expense', formatCurrencyINR(monthlyExpense)],
+                ['Net Balance', formatCurrencyINR(monthlyNet)],
             ],
             theme: 'grid',
             styles: { fontSize: 12 },
@@ -150,8 +169,8 @@ const DashboardPage = () => {
             t.category,
             t.note || '-',
             {
-                // ⬅️ FIX 1: Corrected currency symbol and tight spacing
-                content: `${t.type === 'income' ? '+' : '-'}₹${t.amount.toFixed(2)}`,
+                // ⬅️ FIX 1: Use the new INR format utility for the table amounts
+                content: formatCurrencyINR(t.type === 'income' ? t.amount : -t.amount), 
                 styles: {
                     halign: 'right',
                     textColor: t.type === 'income' ? [16, 185, 129] : [239, 68, 68]
@@ -183,7 +202,7 @@ const DashboardPage = () => {
             doc.setFontSize(16);
             doc.text('Expense Distribution', 14, yPos);
             const canvas = await html2canvas(pieChartElement, { scale: 2, backgroundColor: '#ffffff' });
-            // ⬅️ FIX 2: Centering Pie Chart (Chart width 90mm, start X at ~60mm)
+            // Centering Pie Chart
             doc.addImage(canvas.toDataURL('image/png'), 'PNG', 60, yPos + 8, 90, 90);
             yPos += 105;
         }
@@ -194,7 +213,7 @@ const DashboardPage = () => {
             doc.setFontSize(16);
             doc.text('Monthly Spending Trend', 14, yPos);
             const barCanvas = await html2canvas(barChartElement, { scale: 2, backgroundColor: '#ffffff' });
-            // ⬅️ FIX 2: Centering Bar Chart (Chart width 180mm, start X at ~15mm)
+            // Centering Bar Chart
             doc.addImage(barCanvas.toDataURL('image/png'), 'PNG', 15, yPos + 8, 180, 90);
         }
 
@@ -221,7 +240,7 @@ const DashboardPage = () => {
                 <h2 className={styles.header}>
                     Hello, {user?.name?.split(' ')[0]}!
                     <span className={styles.minBalance}>
-                        (Min Alert: ₹{user?.minBalance !== undefined ? user.minBalance.toFixed(2) : '0.00'})
+                        (Min Alert: {formatCurrencyINR(user?.minBalance)}) {/* ⬅️ FIX: Use INR formatter */}
                     </span>
                 </h2>
 
@@ -247,19 +266,21 @@ const DashboardPage = () => {
 
                 {/* 1. Summary Cards */}
                 <div className={styles.summaryContainer}>
-                    <SummaryCard title="Total Income" value={balance.totalIncome} color={incomeColor}/>
-                    <SummaryCard title="Total Expense" value={balance.totalExpense} color={expenseColor}/>
-                    <SummaryCard title="Net Balance" value={balance.netBalance} color={balanceColor}/>
+                    <SummaryCard title="Total Income" value={balance.totalIncome} color={incomeColor} currencyFormatter={formatCurrencyINR}/>
+                    <SummaryCard title="Total Expense" value={balance.totalExpense} color={expenseColor} currencyFormatter={formatCurrencyINR}/>
+                    <SummaryCard title="Net Balance" value={balance.netBalance} color={balanceColor} currencyFormatter={formatCurrencyINR}/>
                 </div>
 
                 {/* 2. Transaction List Header and Filter */}
                 <div className={styles.filterBar} style={{ justifyContent: 'space-between' }}>
-                    <h3>Transaction History</h3>
+                    {/* ⬅️ LEFT: Transaction History Header and Date Filter (Row 1) */}
                     <div className={styles.controlGroup}>
+                        <h3>Transaction History</h3>
                         <label>Filter by Date:</label>
                         <input type="date" value={filterDate} onChange={handleDateFilter} className={styles.dateInput} />
                     </div>
-                     {/* ⬅️ FIX 3: Aligned Analytics Year (same row, moved to the right) */}
+                    
+                    {/* ⬅️ RIGHT: Analytics Year Selector (Row 1) */}
                     <div className={styles.controlGroup}>
                         <label>Analytics Year:</label>
                         <select
@@ -286,7 +307,7 @@ const DashboardPage = () => {
                             <tr>
                                 <th>Date</th>
                                 <th>Category</th>
-                                <th>Note</th> 
+                                <th>Note</th>
                                 <th style={{ textAlign: 'right' }}>Amount (₹)</th>
                             </tr>
                         </thead>
@@ -298,7 +319,7 @@ const DashboardPage = () => {
                                         <td style={{fontWeight: 'bold'}}>{t.category}</td>
                                         <td>{t.note || '-'}</td>
                                         <td style={{ fontWeight: 'bold', color: t.type === 'income' ? incomeColor : expenseColor, textAlign: 'right' }}>
-                                            {t.type === 'income' ? '+' : '-'}₹{t.amount.toFixed(2)}
+                                            {formatCurrencyINR(t.type === 'income' ? t.amount : -t.amount)} {/* ⬅️ FIX: Use INR formatter */}
                                         </td>
                                     </tr>
                                 ))
