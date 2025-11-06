@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { TransactionContext } from '../context/TransactionContext';
 import { AuthContext } from '../context/AuthContext';
-import SummaryCard from '../components/SummaryCard'; // Assuming you created this
+import SummaryCard from '../components/SummaryCard'; 
 import AddTransactionModal from '../components/AddTransactionModal';
 import CategoryPieChart from '../components/CategoryPieChart';
 import MonthlyBarChart from '../components/MonthlyBarChart';
@@ -30,7 +30,8 @@ const formatCurrencyINR = (num) => {
     const result = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree;
     
     const sign = num < 0 ? '-' : '';
-    return `${sign}₹ ${result}.${decimalPart}`;
+    // ✅ FIX: Ensure the rupee symbol is tight to the amount (e.g., ₹1,000.00)
+    return `${sign}₹${result}.${decimalPart}`; 
 };
 
 
@@ -39,7 +40,7 @@ const DashboardPage = () => {
     const {
         transactions,
         getTransactions,
-        balance, // State: { totalIncome, totalExpense, netBalance }
+        balance, 
         isLoading,
         getAnalyticsData,
         getTransactionsByDate,
@@ -111,13 +112,14 @@ const DashboardPage = () => {
         let allTransactions;
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
+            // FIX: Use 'exportDate' state for fetching the full month's data
             const { data } = await axios.get(
                 `${API_BASE}?year=${exportDate.year}&month=${exportDate.month}&all=true`,
                 config
             );
             allTransactions = data.transactions;
         } catch (err) {
-            alert('Failed to fetch full report data. Please try adding some transactions.');
+            alert('Failed to fetch full report data. Please ensure you have transactions for the selected month.');
             return;
         }
 
@@ -148,7 +150,7 @@ const DashboardPage = () => {
         autoTable(doc, {
             startY: yPos,
             body: [
-                // ⬅️ FIX 1: Use the new INR format utility for PDF summary
+                // ✅ FIX: Use the clean INR format utility for PDF summary
                 ['Total Income', formatCurrencyINR(monthlyIncome)],
                 ['Total Expense', formatCurrencyINR(monthlyExpense)],
                 ['Net Balance', formatCurrencyINR(monthlyNet)],
@@ -169,8 +171,8 @@ const DashboardPage = () => {
             t.category,
             t.note || '-',
             {
-                // ⬅️ FIX 1: Use the new INR format utility for the table amounts
-                content: formatCurrencyINR(t.type === 'income' ? t.amount : -t.amount), 
+                // ✅ FIX: Use the clean INR format utility for the table amounts
+                content: formatCurrencyINR(t.type === 'income' ? t.amount : -t.amount),
                 styles: {
                     halign: 'right',
                     textColor: t.type === 'income' ? [16, 185, 129] : [239, 68, 68]
@@ -240,7 +242,7 @@ const DashboardPage = () => {
                 <h2 className={styles.header}>
                     Hello, {user?.name?.split(' ')[0]}!
                     <span className={styles.minBalance}>
-                        (Min Alert: {formatCurrencyINR(user?.minBalance)}) {/* ⬅️ FIX: Use INR formatter */}
+                        (Min Alert: {formatCurrencyINR(user?.minBalance)})
                     </span>
                 </h2>
 
@@ -282,18 +284,7 @@ const DashboardPage = () => {
                     
                     {/* ⬅️ RIGHT: Analytics Year Selector (Row 1) */}
                     <div className={styles.controlGroup}>
-                        <label>Analytics Year:</label>
-                        <select
-                            value={analysisYear}
-                            onChange={(e) => setAnalysisYear(parseInt(e.target.value, 10))}
-                            className={styles.dateInput}
-                        >
-                            {getYearOptions().map(year => (
-                                <option key={year} value={year}>
-                                    {year}
-                                </option>
-                            ))}
-                        </select>
+                        {/* 🛑 This is now redundant and will be moved */}
                     </div>
                 </div>
 
@@ -307,7 +298,7 @@ const DashboardPage = () => {
                             <tr>
                                 <th>Date</th>
                                 <th>Category</th>
-                                <th>Note</th>
+                                <th>Note</th> 
                                 <th style={{ textAlign: 'right' }}>Amount (₹)</th>
                             </tr>
                         </thead>
@@ -319,7 +310,7 @@ const DashboardPage = () => {
                                         <td style={{fontWeight: 'bold'}}>{t.category}</td>
                                         <td>{t.note || '-'}</td>
                                         <td style={{ fontWeight: 'bold', color: t.type === 'income' ? incomeColor : expenseColor, textAlign: 'right' }}>
-                                            {formatCurrencyINR(t.type === 'income' ? t.amount : -t.amount)} {/* ⬅️ FIX: Use INR formatter */}
+                                            {formatCurrencyINR(t.type === 'income' ? t.amount : -t.amount)}
                                         </td>
                                     </tr>
                                 ))
@@ -335,17 +326,36 @@ const DashboardPage = () => {
                 </div>
 
                 {/* Pagination Controls */}
-                {(totalPages > 1) && !filterDate && (
-                    <div className={styles.paginationContainer}>
-                        <button onClick={() => handlePageChange(currentPage - 1)} disabled={isLoading || currentPage === 1} className={styles.actionButton} style={{backgroundColor: '#FF8042'}}>
-                            Previous
-                        </button>
-                        <span className={styles.pageInfo}>Page {currentPage} of {totalPages}</span>
-                        <button onClick={() => handlePageChange(currentPage + 1)} disabled={isLoading || currentPage === totalPages} className={styles.actionButton} style={{backgroundColor: '#4CAF50'}}>
-                            Next
-                        </button>
+                <div className={styles.filterBar} style={{ justifyContent: 'space-between', marginTop: '20px' }}>
+                    {/* LEFT: Pagination Buttons */}
+                    {(totalPages > 1) && !filterDate && (
+                        <div className={styles.paginationContainer}>
+                            <button onClick={() => handlePageChange(currentPage - 1)} disabled={isLoading || currentPage === 1} className={styles.actionButton} style={{backgroundColor: '#FF8042'}}>
+                                Previous
+                            </button>
+                            <span className={styles.pageInfo}>Page {currentPage} of {totalPages}</span>
+                            <button onClick={() => handlePageChange(currentPage + 1)} disabled={isLoading || currentPage === totalPages} className={styles.actionButton} style={{backgroundColor: '#4CAF50'}}>
+                                Next
+                            </button>
+                        </div>
+                    )}
+                    
+                    {/* ⬅️ FIX: Analytics Year moved to bottom right (same line as pagination) */}
+                    <div className={styles.controlGroup}>
+                        <label>Analytics Year:</label>
+                        <select
+                            value={analysisYear}
+                            onChange={(e) => setAnalysisYear(parseInt(e.target.value, 10))}
+                            className={styles.dateInput}
+                        >
+                            {getYearOptions().map(year => (
+                                <option key={year} value={year}>
+                                    {year}
+                                </option>
+                            ))}
+                        </select>
                     </div>
-                )}
+                </div>
 
                 {/* 4. Charts Integration */}
                 <div className={styles.chartsGrid}>
