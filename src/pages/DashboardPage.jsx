@@ -277,16 +277,13 @@ const DashboardPage = () => {
                 {/* 2. Transaction List Header and Filter */}
                 <div className={styles.filterBar} style={{ justifyContent: 'space-between' }}>
                     
-                    {/* ⬅️ LEFT: Transaction History Header and Date Filter */}
+                    {/* ⬅️ LEFT SIDE: Transaction History Header */}
+                    <h3>Transaction History</h3>
+                    
+                    {/* ⬅️ RIGHT SIDE: Date Filter Input (Pushed to the end) */}
                     <div className={styles.controlGroup}>
-                        <h3>Transaction History</h3>
                         <label>Filter by Date:</label>
                         <input type="date" value={filterDate} onChange={handleDateFilter} className={styles.dateInput} />
-                    </div>
-                    
-                    {/* ⬅️ RIGHT: This space is empty in Row 1 now, maintaining flex-space */}
-                    <div className={styles.controlGroup}>
-                        
                     </div>
                 </div>
 
@@ -294,6 +291,42 @@ const DashboardPage = () => {
                 {error && <p className={styles.errorMessage}>Error: {error}</p>}
 
                 {/* 3. Transaction List Table */}
+                {/* ... (Transaction List Table, Charts Integration follow below) ... */}
+
+                {/* ⬅️ NEW ROW: Analytics Year and Pagination (Combined Row) */}
+                <div className={styles.filterBar} style={{ justifyContent: 'space-between', marginTop: '20px' }}>
+                    
+                    {/* ⬅️ LEFT SIDE: Analytics Year Selector (New Position) */}
+                    <div className={styles.controlGroup}>
+                        <label>Analytics Year:</label>
+                        <select
+                            value={analysisYear}
+                            onChange={(e) => setAnalysisYear(parseInt(e.target.value, 10))}
+                            className={styles.dateInput}
+                        >
+                            {getYearOptions().map(year => (
+                                <option key={year} value={year}>
+                                    {year}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    
+                    {/* ⬅️ RIGHT SIDE: Pagination Buttons */}
+                    {(totalPages > 1) && !filterDate && (
+                        <div className={styles.paginationContainer}>
+                            <button onClick={() => handlePageChange(currentPage - 1)} disabled={isLoading || currentPage === 1} className={styles.actionButton} style={{backgroundColor: '#FF8042'}}>
+                                Previous
+                            </button>
+                            <span className={styles.pageInfo}>Page {currentPage} of {totalPages}</span>
+                            <button onClick={() => handlePageChange(currentPage + 1)} disabled={isLoading || currentPage === totalPages} className={styles.actionButton} style={{backgroundColor: '#4CAF50'}}>
+                                Next
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                {/* 4. Charts Integration */}
                 <div className={styles.tableContainer}>
                     <table className={styles.transactionTable}>
                         <thead>
@@ -328,39 +361,6 @@ const DashboardPage = () => {
                 </div>
 
                 {/* Pagination Controls AND Analytics Year (Combined Row) */}
-                <div className={styles.filterBar} style={{ justifyContent: 'space-between', marginTop: '20px' }}>
-                    
-                    {/* LEFT: Pagination Buttons */}
-                    {(totalPages > 1) && !filterDate && (
-                        <div className={styles.paginationContainer}>
-                            <button onClick={() => handlePageChange(currentPage - 1)} disabled={isLoading || currentPage === 1} className={styles.actionButton} style={{backgroundColor: '#FF8042'}}>
-                                Previous
-                            </button>
-                            <span className={styles.pageInfo}>Page {currentPage} of {totalPages}</span>
-                            <button onClick={() => handlePageChange(currentPage + 1)} disabled={isLoading || currentPage === totalPages} className={styles.actionButton} style={{backgroundColor: '#4CAF50'}}>
-                                Next
-                            </button>
-                        </div>
-                    )}
-                    
-                    {/* ⬅️ RIGHT: Analytics Year (Aligned to the right) */}
-                    <div className={styles.controlGroup}>
-                        <label>Analytics Year:</label>
-                        <select
-                            value={analysisYear}
-                            onChange={(e) => setAnalysisYear(parseInt(e.target.value, 10))}
-                            className={styles.dateInput}
-                        >
-                            {getYearOptions().map(year => (
-                                <option key={year} value={year}>
-                                    {year}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-
-                {/* 4. Charts Integration */}
                 <div className={styles.chartsGrid}>
                     <div id="pie-chart-container" className={styles.chartContainer}>
                         <h3 className={styles.chartTitle}>Expense Distribution</h3>
