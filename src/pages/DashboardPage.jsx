@@ -30,8 +30,7 @@ const formatCurrencyINR = (num) => {
     const result = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree;
     
     const sign = num < 0 ? '-' : '';
-    // ✅ FIX 1: Remove space between sign and Rupee symbol
-    return `${sign}₹${result}.${decimalPart}`; 
+    return `${sign}₹${result}.${decimalPart}`;
 };
 
 
@@ -181,7 +180,7 @@ const DashboardPage = () => {
 
         autoTable(doc, {
             startY: yPos + 8,
-            head: [['Date', 'Category', 'Note', 'Amount (₹)']],
+            head: [['Date', 'Category', 'Note', 'Amount (INR)']],
             body: tableBody,
             theme: 'striped',
             headStyles: { fillColor: [41, 128, 185] },
@@ -327,7 +326,7 @@ const DashboardPage = () => {
                     
                     {/* ⬅️ LEFT SIDE: Pagination Buttons */}
                     {(totalPages > 1) && !filterDate && (
-                        <div className={styles.paginationContainer}>
+                        <div className={styles.paginationContainer} style={{ width: '100%', justifyContent: 'center' }}>
                             <button onClick={() => handlePageChange(currentPage - 1)} disabled={isLoading || currentPage === 1} className={styles.actionButton} style={{backgroundColor: '#FF8042'}}>
                                 Previous
                             </button>
