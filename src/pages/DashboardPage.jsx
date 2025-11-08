@@ -148,7 +148,7 @@ const DashboardPage = () => {
         autoTable(doc, {
             startY: yPos,
             body: [
-                // ✅ FIX 1: Use the utility function directly for the summary table content
+                // Ensure no extra spaces or hidden characters
                 ['Total Income', formatCurrencyINR(monthlyIncome)], 
                 ['Total Expense', formatCurrencyINR(monthlyExpense)],
                 ['Net Balance', formatCurrencyINR(monthlyNet)],
