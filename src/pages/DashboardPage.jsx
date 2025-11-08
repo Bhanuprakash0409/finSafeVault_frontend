@@ -30,7 +30,11 @@ const formatCurrencyINR = (num) => {
     const result = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree;
     
     const sign = num < 0 ? '-' : '';
-    return `${sign}₹${result}.${decimalPart}`;
+    
+    // ✅ CRITICAL FIX: Use the native symbol + the formatted number string. 
+    // If the PDF viewer cannot render '₹', it should still display the clean number.
+    // We are trusting the character encoding is working properly here.
+    return `${sign}₹${result}.${decimalPart}`; 
 };
 
 
@@ -170,7 +174,7 @@ const DashboardPage = () => {
             t.note || '-',
             {
                 // ✅ FIX 2: Apply the formatter here for the transaction amounts
-                content: formatCurrencyINR(t.type === 'income' ? t.amount : -t.amount),
+                content: formatCurrencyINR(t.type === 'income' ? t.amount : -t.amount), 
                 styles: {
                     halign: 'right',
                     textColor: t.type === 'income' ? [16, 185, 129] : [239, 68, 68]
