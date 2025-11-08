@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { TransactionContext } from '../context/TransactionContext';
 import { AuthContext } from '../context/AuthContext';
-import SummaryCard from '../components/SummaryCard'; 
+import SummaryCard from '../components/SummaryCard';
 import AddTransactionModal from '../components/AddTransactionModal';
 import CategoryPieChart from '../components/CategoryPieChart';
 import MonthlyBarChart from '../components/MonthlyBarChart';
@@ -13,7 +13,7 @@ import axios from 'axios';
 
 // NOTE: You must have created the DashboardPage.module.css and imported utility constants.
 import styles from './DashboardPage.module.css';
-// import { CHART_COLORS } from '../utils/constants'; // ⬅️ DELETE THIS LINE
+import { CHART_COLORS } from '../utils/constants';
 
 // Utility function for Indian Rupee format (Lakhs/Thousands) - Defined outside the component
 const formatCurrencyINR = (num) => {
@@ -30,7 +30,8 @@ const formatCurrencyINR = (num) => {
     const result = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree;
     
     const sign = num < 0 ? '-' : '';
-    return `${sign}₹ ${result}.${decimalPart}`; 
+    // ✅ FIX 1: Remove space between sign and Rupee symbol
+    return `${sign}₹${result}.${decimalPart}`; 
 };
 
 
@@ -111,15 +112,11 @@ const DashboardPage = () => {
         let allTransactions;
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            
-            // ✅ FIX 1: Use exportDate state to filter ALL transactions for that specific month/year
             const { data } = await axios.get(
-                `${API_BASE}?year=${exportDate.year}&month=${exportDate.month}&all=true&token=${user.token}`,
+                `${API_BASE}?year=${exportDate.year}&month=${exportDate.month}&all=true`,
                 config
             );
-            
-            // Assuming the backend returns { transactions: [...] }
-            allTransactions = data.transactions; 
+            allTransactions = data.transactions;
         } catch (err) {
             alert('Failed to fetch full report data. Please ensure you have transactions for the selected month.');
             return;
@@ -152,7 +149,8 @@ const DashboardPage = () => {
         autoTable(doc, {
             startY: yPos,
             body: [
-                ['Total Income', formatCurrencyINR(monthlyIncome)],
+                // ✅ FIX 1: Use the utility function directly for the summary table content
+                ['Total Income', formatCurrencyINR(monthlyIncome)], 
                 ['Total Expense', formatCurrencyINR(monthlyExpense)],
                 ['Net Balance', formatCurrencyINR(monthlyNet)],
             ],
@@ -172,7 +170,7 @@ const DashboardPage = () => {
             t.category,
             t.note || '-',
             {
-                // ✅ FIX 2: Use the clean INR format utility for the table amounts
+                // ✅ FIX 2: Apply the formatter here for the transaction amounts
                 content: formatCurrencyINR(t.type === 'income' ? t.amount : -t.amount),
                 styles: {
                     halign: 'right',
@@ -274,13 +272,13 @@ const DashboardPage = () => {
                     <SummaryCard title="Net Balance" value={balance.netBalance} color={balanceColor} currencyFormatter={formatCurrencyINR}/>
                 </div>
 
-                {/* 2. Transaction List Header and Filter */}
+                {/* 2. Transaction List Header and Filter (Row 1) */}
                 <div className={styles.filterBar} style={{ justifyContent: 'space-between' }}>
                     
                     {/* ⬅️ LEFT SIDE: Transaction History Header */}
                     <h3>Transaction History</h3>
                     
-                    {/* ⬅️ RIGHT SIDE: Date Filter Input (Pushed to the end) */}
+                    {/* ⬅️ RIGHT SIDE: Filter by Date (Pushed to the far right) */}
                     <div className={styles.controlGroup}>
                         <label>Filter by Date:</label>
                         <input type="date" value={filterDate} onChange={handleDateFilter} className={styles.dateInput} />
@@ -291,42 +289,6 @@ const DashboardPage = () => {
                 {error && <p className={styles.errorMessage}>Error: {error}</p>}
 
                 {/* 3. Transaction List Table */}
-                {/* ... (Transaction List Table, Charts Integration follow below) ... */}
-
-                {/* ⬅️ NEW ROW: Analytics Year and Pagination (Combined Row) */}
-                <div className={styles.filterBar} style={{ justifyContent: 'space-between', marginTop: '20px' }}>
-                    
-                    {/* ⬅️ LEFT SIDE: Analytics Year Selector (New Position) */}
-                    <div className={styles.controlGroup}>
-                        <label>Analytics Year:</label>
-                        <select
-                            value={analysisYear}
-                            onChange={(e) => setAnalysisYear(parseInt(e.target.value, 10))}
-                            className={styles.dateInput}
-                        >
-                            {getYearOptions().map(year => (
-                                <option key={year} value={year}>
-                                    {year}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    
-                    {/* ⬅️ RIGHT SIDE: Pagination Buttons */}
-                    {(totalPages > 1) && !filterDate && (
-                        <div className={styles.paginationContainer}>
-                            <button onClick={() => handlePageChange(currentPage - 1)} disabled={isLoading || currentPage === 1} className={styles.actionButton} style={{backgroundColor: '#FF8042'}}>
-                                Previous
-                            </button>
-                            <span className={styles.pageInfo}>Page {currentPage} of {totalPages}</span>
-                            <button onClick={() => handlePageChange(currentPage + 1)} disabled={isLoading || currentPage === totalPages} className={styles.actionButton} style={{backgroundColor: '#4CAF50'}}>
-                                Next
-                            </button>
-                        </div>
-                    )}
-                </div>
-
-                {/* 4. Charts Integration */}
                 <div className={styles.tableContainer}>
                     <table className={styles.transactionTable}>
                         <thead>
@@ -360,7 +322,40 @@ const DashboardPage = () => {
                     </table>
                 </div>
 
-                {/* Pagination Controls AND Analytics Year (Combined Row) */}
+                {/* Pagination Controls AND Analytics Year (Combined Row - Row 2) */}
+                <div className={styles.filterBar} style={{ justifyContent: 'space-between', marginTop: '20px' }}>
+                    
+                    {/* ⬅️ LEFT SIDE: Pagination Buttons */}
+                    {(totalPages > 1) && !filterDate && (
+                        <div className={styles.paginationContainer}>
+                            <button onClick={() => handlePageChange(currentPage - 1)} disabled={isLoading || currentPage === 1} className={styles.actionButton} style={{backgroundColor: '#FF8042'}}>
+                                Previous
+                            </button>
+                            <span className={styles.pageInfo}>Page {currentPage} of {totalPages}</span>
+                            <button onClick={() => handlePageChange(currentPage + 1)} disabled={isLoading || currentPage === totalPages} className={styles.actionButton} style={{backgroundColor: '#4CAF50'}}>
+                                Next
+                            </button>
+                        </div>
+                    )}
+                    
+                    {/* ⬅️ RIGHT SIDE: Analytics Year (Aligned to the right, beside pagination) */}
+                    <div className={styles.controlGroup}>
+                        <label>Analytics Year:</label>
+                        <select
+                            value={analysisYear}
+                            onChange={(e) => setAnalysisYear(parseInt(e.target.value, 10))}
+                            className={styles.dateInput}
+                        >
+                            {getYearOptions().map(year => (
+                                <option key={year} value={year}>
+                                    {year}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+
+                {/* 4. Charts Integration */}
                 <div className={styles.chartsGrid}>
                     <div id="pie-chart-container" className={styles.chartContainer}>
                         <h3 className={styles.chartTitle}>Expense Distribution</h3>
