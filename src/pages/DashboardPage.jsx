@@ -13,7 +13,7 @@ import axios from 'axios';
 
 // NOTE: You must have created the DashboardPage.module.css and imported utility constants.
 import styles from './DashboardPage.module.css';
-import { CHART_COLORS } from '../utils/constants';
+// import { CHART_COLORS } from '../utils/constants'; // ⬅️ DELETE THIS LINE
 
 // Utility function for Indian Rupee format (Lakhs/Thousands) - Defined outside the component
 const formatCurrencyINR = (num) => {
