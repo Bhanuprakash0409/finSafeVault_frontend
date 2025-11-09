@@ -3,6 +3,7 @@ import { TransactionContext } from '../context/TransactionContext';
 import { AuthContext } from '../context/AuthContext';
 import SummaryCard from '../components/SummaryCard';
 import AddTransactionModal from '../components/AddTransactionModal';
+import NoteModal from '../components/NoteModal'; // ⬅️ NEW: Import NoteModal
 import CategoryPieChart from '../components/CategoryPieChart';
 import MonthlyBarChart from '../components/MonthlyBarChart';
 // PDF Export Dependencies
@@ -54,6 +55,8 @@ const DashboardPage = () => {
     // Local States
     const [filterDate, setFilterDate] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isNoteModalOpen, setIsNoteModalOpen] = useState(false); // ⬅️ NEW: State for Note Modal
+    const [userNote, setUserNote] = useState(''); // ⬅️ NEW: State for user's note
     const [analysisYear, setAnalysisYear] = useState(new Date().getFullYear());
     const [exportDate, setExportDate] = useState({
         year: new Date().getFullYear(),
@@ -62,16 +65,33 @@ const DashboardPage = () => {
 
     const API_BASE = 'https://finsafe-tracker-api.onrender.com/api/transactions'; 
 
+    // ⬅️ NEW: Function to fetch the user's note
+    const fetchNote = async () => {
+        if (user && user.token) {
+            try {
+                const config = { headers: { Authorization: `Bearer ${user.token}` } };
+                // ✅ FIX: Use the correct endpoint from userRoutes.js
+                const { data } = await axios.get('https://finsafe-tracker-api.onrender.com/api/users/note', config);
+                setUserNote(data.note || '');
+            } catch (err) {
+                console.error('Failed to fetch note:', err);
+            }
+        }
+    };
+
     // --- Data Fetching Effect (Triggers on Login and Year Change) ---
     useEffect(() => {
         if (user) {
             // ✅ FIX: Fetch both transactions and analytics in a coordinated way
             // to prevent race conditions with the loading state.
             getTransactions(1); // This fetches transactions and balance.
+            fetchNote(); // ⬅️ NEW: Fetch note on load
             getAnalyticsData(analysisYear); // This fetches chart data.
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user, analysisYear]);
+
+
 
 
     // --- Handlers for User Interaction ---
@@ -259,6 +279,10 @@ const DashboardPage = () => {
                         Download Monthly Report (PDF)
                     </button>
 
+                    <button onClick={() => setIsNoteModalOpen(true)} className={`${styles.actionButton} ${styles.noteButton}`}>
+                        My Notes
+                    </button>
+
                     <button onClick={() => setIsModalOpen(true)} className={`${styles.actionButton} ${styles.addButton}`}>
                         + Add Transaction
                     </button>
@@ -274,6 +298,14 @@ const DashboardPage = () => {
                     <SummaryCard title="Total Expense" value={balance.totalExpense} color={expenseColor} currencyFormatter={formatCurrencyINR}/>
                     <SummaryCard title="Net Balance" value={balance.netBalance} color={balanceColor} currencyFormatter={formatCurrencyINR}/>
                 </div>
+
+                {/* ⬅️ NEW: Note Display Area */}
+                {userNote && (
+                    <div className={`${styles.noteDisplay} no-print`}>
+                        <h4>My Notes:</h4>
+                        <p>{userNote}</p>
+                    </div>
+                )}
 
                 {/* 2. Transaction List Header and Filter (Row 1) */}
                 <div className={styles.filterBar} style={{ justifyContent: 'space-between' }}>
@@ -374,6 +406,7 @@ const DashboardPage = () => {
 
             {/* Modal Render */}
             {isModalOpen && <AddTransactionModal onClose={() => setIsModalOpen(false)} />}
+            {isNoteModalOpen && <NoteModal currentNote={userNote} onClose={() => { setIsNoteModalOpen(false); fetchNote(); }} />}
         </div>
     );
 };
