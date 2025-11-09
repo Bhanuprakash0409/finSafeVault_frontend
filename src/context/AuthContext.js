@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: 'AUTH_START' });
     try {
 
-      const response = await axios.post(AUTH_API_URL + '/login', { username, password });
+      const response = await axios.post(AUTH_API_URL + '/login', { name: username, password: password });
       if (response.status !== 200) {
         throw new Error(response.data.message || 'Login failed');
       }
