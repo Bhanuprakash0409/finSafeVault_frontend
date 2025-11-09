@@ -33,8 +33,7 @@ const formatCurrencyINR = (num) => {
     
     // ✅ CRITICAL FIX: Use the native symbol + the formatted number string. 
     // If the PDF viewer cannot render '₹', it should still display the clean number.
-    // We are trusting the character encoding is working properly here.
-    return `${sign}₹${result}.${decimalPart}`; 
+    return `${sign}₹${result}.${decimalPart}`;
 };
 
 
@@ -152,7 +151,6 @@ const DashboardPage = () => {
         autoTable(doc, {
             startY: yPos,
             body: [
-                // Ensure no extra spaces or hidden characters
                 ['Total Income', formatCurrencyINR(monthlyIncome)], 
                 ['Total Expense', formatCurrencyINR(monthlyExpense)],
                 ['Net Balance', formatCurrencyINR(monthlyNet)],

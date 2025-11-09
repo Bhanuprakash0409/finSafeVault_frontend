@@ -110,7 +110,7 @@ export const TransactionProvider = ({ children }) => {
       console.log('API Success Response:', res.data); 
       
       // ✅ FIX: Refetch the first page of transactions to ensure the list is up-to-date.
-      getTransactions(1);
+      await getTransactions(1);
 
       return true;
     } catch (error) {
