@@ -192,7 +192,7 @@ export const TransactionProvider = ({ children }) => {
 
           // Fetch both transactions and analytics in parallel for the given month
           const [transactionsRes, analyticsRes] = await Promise.all([
-              axios.get(API_URL + `/transactions?year=${year}&month=${month}`, config),
+              axios.get(API_URL + `/transactions?year=${year}&month=${month}&all=true`, config), // ✅ FIX: Add 'all=true' to fetch all transactions for the month
               axios.get(API_URL + `/transactions/analytics?year=${year}&month=${month}`, config)
           ]);
 
