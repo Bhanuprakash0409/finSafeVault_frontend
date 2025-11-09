@@ -18,22 +18,22 @@ const LoginPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    login(username, password); // ✅ FIX: Pass credentials as separate arguments
+    login(username, password); // Pass username (as email) and password
   };
 
   return (
     <div className={styles.authContainer} style={{ backgroundImage: `url(${logo})` }}>
       <div className={styles.formBox}>
         <h2>Sign in to FinSafe</h2>
-        {error && <div className={styles.error}>{error.message || error}</div>} {/* Ensure error message is displayed */}
+        {error && <div className={styles.error}>{error.message || error}</div>}
         <form onSubmit={handleSubmit}>
         <div className={styles.inputGroup}>
-            <label>Username</label> {/* Change label to Username */}
+            <label>Username / Email</label>
             <input
-              type="text" // Change input type to text
+              type="text"
               required
               value={username}
-              onChange={(e) => setUsername(e.target.value)} // Update username state
+              onChange={(e) => setUsername(e.target.value)}
               className={styles.input}
             />
           </div>

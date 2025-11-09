@@ -48,8 +48,8 @@ export const AuthProvider = ({ children }) => {
   const login = async (username, password) => {
     dispatch({ type: 'AUTH_START' });
     try {
-
-      const response = await axios.post(AUTH_API_URL + '/login', { email: username, password: password });
+      // ✅ FIX: Change the payload key from 'email' to 'name'
+      const response = await axios.post(AUTH_API_URL + '/login', { name: username, password: password });
       if (response.status !== 200) {
         throw new Error(response.data.message || 'Login failed');
       }
