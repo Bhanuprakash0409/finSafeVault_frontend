@@ -65,8 +65,10 @@ const DashboardPage = () => {
     // --- Data Fetching Effect (Triggers on Login and Year Change) ---
     useEffect(() => {
         if (user) {
-            getTransactions(1);
-            getAnalyticsData(analysisYear);
+            // ✅ FIX: Fetch both transactions and analytics in a coordinated way
+            // to prevent race conditions with the loading state.
+            getTransactions(1); // This fetches transactions and balance.
+            getAnalyticsData(analysisYear); // This fetches chart data.
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user, analysisYear]);
