@@ -33,7 +33,7 @@ const formatCurrencyINR = (num) => {
     
     // ✅ CRITICAL FIX: Use the native symbol + the formatted number string. 
     // If the PDF viewer cannot render '₹', it should still display the clean number.
-    return `${sign}₹${result}.${decimalPart}`;
+    return `${sign}Rs. ${result}.${decimalPart}`;
 };
 
 
