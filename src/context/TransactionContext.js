@@ -34,9 +34,10 @@ const transactionReducer = (state, action) => {
         balance: action.payload.balance, // ⬅️ NEW: Update balance from API
         isLoading: false 
       };
-    case 'ADD_SUCCESS': // ✅ FIX: This case now only signals the end of the 'add' loading state.
-      // The transaction list is updated by the subsequent 'getTransactions' call.
-      return { ...state, isLoading: false };
+    case 'ADD_SUCCESS':
+      // ✅ FIX: After adding, the list is refetched. This ensures the loading state is turned off
+      // but doesn't incorrectly clear the newly fetched data.
+      return { ...state, isLoading: false, error: null };
 
     case 'FETCH_ANALYTICS_SUCCESS':
       return { ...state, analytics: action.payload, isLoading: false };
