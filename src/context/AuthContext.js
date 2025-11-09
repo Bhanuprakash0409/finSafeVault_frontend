@@ -102,13 +102,4 @@ export const AuthProvider = ({ children }) => {
             {children}
         </AuthContext.Provider>
     );
-};// c:\Users\BHANU\OneDrive\Desktop\FinSafeVault\backend\services\emailService.js
-
-const transporter = nodemailer.createTransport({
-    // ✅ This is the critical fix
-    service: 'SendGrid', 
-    auth: {
-        user: 'apikey', 
-        pass: process.env.SENDGRID_API_KEY, 
-    },
-});
+};
