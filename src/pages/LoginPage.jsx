@@ -18,7 +18,7 @@ const LoginPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    login(username, password); // Pass username and password for login
+    login(username, password); // ✅ FIX: Pass credentials as separate arguments
   };
 
   return (
