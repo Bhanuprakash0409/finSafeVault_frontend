@@ -37,11 +37,11 @@ const AddTransactionModal = ({ onClose }) => {
         return;
     }
 
-    // ✅ 3. FIX: Pass both formData and the user object
-    const success = await addTransaction(formData, user);
+    // ✅ FIX: Pass only the formData object as expected by the context function.
+    const success = await addTransaction(formData);
     
     if (success) {
-      onClose(); 
+      onClose();
     }
   };
 
